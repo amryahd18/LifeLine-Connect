@@ -1,94 +1,243 @@
 {% extends "base.html" %}
 
-{% block title %}Blood Donation Camps | LifeLine Connect{% endblock %}
+{% block title %}Blood Donation Campuses | LifeLine Connect{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<!-- Executive Campus Network Hero Header -->
+<div class="page-header" style="margin-bottom: 1.5rem;">
   <div>
-    <h1 class="page-title">Blood Donation Camps</h1>
-    <p class="page-subtitle">Venue catalogue, scheduled drives, targets, and donor review telemetry</p>
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="badge" style="background: rgba(225, 29, 72, 0.15); color: #fda4af; border: 1px solid rgba(225, 29, 72, 0.35);">
+        🩸 NBTS Mobile Drives &amp; Venues
+      </span>
+      <span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3);">
+        ⚡ Real-time Telemetry
+      </span>
+    </div>
+    <h1 class="page-title" style="font-size: 2.1rem; letter-spacing: -0.02em;">Blood Donation Campuses &amp; Mobile Drives</h1>
+    <p class="page-subtitle" style="max-width: 780px;">
+      Island-wide accredited collection centers, scheduled mobile drives, volunteer phlebotomy squads, and live donor review telemetry.
+    </p>
   </div>
-  <div style="display: flex; gap: 0.75rem;">
-    <a href="{{ url_for('camps.top_rated') }}" class="btn btn-outline" style="border-color: #f59e0b; color: #fbbf24;">
-      ⭐ Top Rated Camps (MongoDB)
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+    <a href="{{ url_for('camps.top_rated') }}" class="btn btn-outline" style="border-color: #f59e0b; color: #fbbf24; display: flex; align-items: center; gap: 0.4rem;">
+      <span>⭐</span> Top Rated Campuses (MongoDB)
     </a>
   </div>
 </div>
 
-<!-- Status Filters -->
-<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-  <a href="{{ url_for('camps.index') }}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline{% endif %}">
-    All Camps
-  </a>
-  <a href="{{ url_for('camps.index', status='ACTIVE') }}" class="btn btn-sm {% if selected_status == 'ACTIVE' %}btn-primary{% else %}btn-outline{% endif %}">
-    Active Drives
-  </a>
-  <a href="{{ url_for('camps.index', status='UPCOMING') }}" class="btn btn-sm {% if selected_status == 'UPCOMING' %}btn-primary{% else %}btn-outline{% endif %}">
-    Upcoming
-  </a>
-  <a href="{{ url_for('camps.index', status='COMPLETED') }}" class="btn btn-sm {% if selected_status == 'COMPLETED' %}btn-primary{% else %}btn-outline{% endif %}">
-    Completed
-  </a>
+<!-- Key Performance Telemetry Bar -->
+<div class="hospital-telemetry-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.5rem;">
+  <div class="telemetry-kpi-card info-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Regional Venues</span>
+      <span>🏛️</span>
+    </div>
+    <div class="telemetry-kpi-value">{{ camps|length }} Campuses</div>
+    <div class="telemetry-kpi-subtext">Colombo • Kandy • Galle • Moratuwa</div>
+  </div>
+
+  <div class="telemetry-kpi-card">
+    <div class="telemetry-kpi-header">
+      <span>Target Collection</span>
+      <span>🎯</span>
+    </div>
+    {% set total_target = namespace(value=0) %}
+    {% set total_collected = namespace(value=0) %}
+    {% for c in camps %}
+      {% set total_target.value = total_target.value + c.target_units %}
+      {% set total_collected.value = total_collected.value + c.units_collected %}
+    {% endfor %}
+    <div class="telemetry-kpi-value">{{ total_target.value }} Units</div>
+    <div class="telemetry-kpi-subtext">{{ total_collected.value }} Units Collected to Date</div>
+  </div>
+
+  <div class="telemetry-kpi-card success-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Active Operations</span>
+      <span>🟢</span>
+    </div>
+    {% set active_count = namespace(value=0) %}
+    {% for c in camps if c.status == 'ACTIVE' %}
+      {% set active_count.value = active_count.value + 1 %}
+    {% endfor %}
+    <div class="telemetry-kpi-value" style="color: #34d399;">{{ active_count.value }} Live</div>
+    <div class="telemetry-kpi-subtext">Accepting Donors Today</div>
+  </div>
+
+  <div class="telemetry-kpi-card">
+    <div class="telemetry-kpi-header">
+      <span>Medical Phlebotomists</span>
+      <span>👨‍⚕️</span>
+    </div>
+    {% set total_staff = namespace(value=0) %}
+    {% for c in camps %}
+      {% set total_staff.value = total_staff.value + c.staff_count %}
+    {% endfor %}
+    <div class="telemetry-kpi-value" style="color: #38bdf8;">{{ total_staff.value }} Staff</div>
+    <div class="telemetry-kpi-subtext">Clinical Specialists Assigned</div>
+  </div>
 </div>
 
-<!-- Camps Grid Cards -->
-<div class="grid-cols-3">
+<!-- Interactive Filter & Search Control Panel -->
+<div class="glass-card" style="margin-bottom: 2rem; padding: 1rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+    <!-- Status Filter Pills -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-right: 0.25rem;">Status:</span>
+      <a href="{{ url_for('camps.index') }}" class="btn btn-sm {% if not selected_status %}btn-primary{% else %}btn-outline{% endif %}">
+        All Campuses ({{ camps|length }})
+      </a>
+      <a href="{{ url_for('camps.index', status='ACTIVE') }}" class="btn btn-sm {% if selected_status == 'ACTIVE' %}btn-primary{% else %}btn-outline{% endif %}">
+        🟢 Active Now
+      </a>
+      <a href="{{ url_for('camps.index', status='UPCOMING') }}" class="btn btn-sm {% if selected_status == 'UPCOMING' %}btn-primary{% else %}btn-outline{% endif %}">
+        ⏳ Upcoming Drives
+      </a>
+      <a href="{{ url_for('camps.index', status='COMPLETED') }}" class="btn btn-sm {% if selected_status == 'COMPLETED' %}btn-primary{% else %}btn-outline{% endif %}">
+        ✓ Completed
+      </a>
+    </div>
+
+    <!-- Quick Search Input -->
+    <div style="position: relative; min-width: 260px; flex: 1; max-width: 380px;">
+      <input type="text" 
+             id="campSearchInput" 
+             placeholder="Search campus, city or organizer..." 
+             onkeyup="filterCampsLive()" 
+             class="form-control" 
+             style="height: 38px; font-size: 0.88rem; padding-left: 2rem;">
+      <span style="position: absolute; left: 10px; top: 9px; font-size: 0.9rem; color: var(--text-muted);">🔍</span>
+    </div>
+  </div>
+</div>
+
+<!-- Spacious Editorial Campus Cards Grid -->
+<div class="camps-editorial-grid" id="campsContainer">
   {% for c in camps %}
-    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
-      <!-- Real Venue Thumbnail -->
-      <div style="position: relative; height: 160px; overflow: hidden;">
+    {% set pct = ((c.units_collected / c.target_units * 100)|round(1)) if c.target_units > 0 else 0 %}
+    <div class="camp-showcase-card camp-item-card" 
+         data-name="{{ c.camp_name|lower }}" 
+         data-city="{{ c.city|lower }}" 
+         data-organizer="{{ c.organizer_name|lower }}">
+      
+      <!-- Real Venue High-Res Media Showcase -->
+      <div class="camp-card-media">
         <img src="{{ url_for('static', filename='images/venues/camp_' ~ c.camp_id ~ '.jpg') }}" 
              onerror="this.src='{{ url_for('static', filename='images/venues/default_camp.jpg') }}'" 
              alt="{{ c.camp_name }}" 
-             style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
-             onmouseover="this.style.transform='scale(1.05)'"
-             onmouseout="this.style.transform='scale(1)'">
-        <div style="position: absolute; top: 10px; right: 10px;">
-          {% if c.status == 'ACTIVE' %}
-            <span class="badge badge-active">Active Now</span>
-          {% elif c.status == 'UPCOMING' %}
-            <span class="badge badge-deferred">Upcoming</span>
-          {% else %}
-            <span class="badge badge-completed">Completed</span>
-          {% endif %}
-        </div>
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent 0%, rgba(6,9,17,0.95) 100%); padding: 0.5rem 1rem;">
-          <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono); font-weight: 700;">CAMP #{{ c.camp_id }}</span>
+             loading="lazy">
+        
+        <!-- Floating Cyber-Clinical Overlay Badges -->
+        <div class="camp-card-media-overlay">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+            <span style="font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; color: #fff; background: rgba(6,9,17,0.85); backdrop-filter: blur(8px); padding: 0.25rem 0.55rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
+              CAMP #{{ c.camp_id }}
+            </span>
+            {% if c.status == 'ACTIVE' %}
+              <span class="badge badge-active" style="box-shadow: 0 0 12px rgba(16,185,129,0.5);">🟢 Active</span>
+            {% elif c.status == 'UPCOMING' %}
+              <span class="badge badge-deferred">⏳ Upcoming</span>
+            {% else %}
+              <span class="badge badge-completed">✓ Finished</span>
+            {% endif %}
+          </div>
+          
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #fff; background: rgba(14,165,233,0.85); backdrop-filter: blur(8px); padding: 0.2rem 0.55rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.3rem;">
+              📍 {{ c.city }}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+      <!-- Spacious Content Wing -->
+      <div class="camp-card-body">
         <div>
-          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">
-            <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}" style="color: #fff;">{{ c.camp_name }}</a>
+          <div style="margin-bottom: 0.5rem;">
+            <span class="camp-organizer-pill" title="{{ c.organizer_name }}">
+              🏛️ {{ c.organizer_name }}
+            </span>
+          </div>
+
+          <h3 class="camp-card-title">
+            <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}">{{ c.camp_name }}</a>
           </h3>
 
-        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-          <div>🏛️ {{ c.organizer_name }}</div>
-          <div>📍 {{ c.venue_address }}, {{ c.city }}</div>
-          <div>📅 {{ c.start_date|format_date }} &ndash; {{ c.end_date|format_date }}</div>
-        </div>
-
-        <!-- Metrics bar -->
-        <div style="background: rgba(13, 21, 39, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.3rem;">
-            <span style="color: var(--text-muted);">Collection Progress</span>
-            <strong style="color: #fff;">{{ c.units_collected }} / {{ c.target_units }} Units</strong>
-          </div>
-          <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
-            {% set pct = (c.units_collected / c.target_units * 100) if c.target_units > 0 else 0 %}
-            <div style="width: {{ pct if pct <= 100 else 100 }}%; height: 100%; background: linear-gradient(90deg, var(--crimson-500), #38bdf8);"></div>
+          <div class="camp-info-row">
+            <div class="camp-info-item">
+              <span style="color: var(--text-muted); font-size: 0.9rem;">📍</span>
+              <span style="color: #cbd5e1;">{{ c.venue_address }}, <strong>{{ c.city }}</strong></span>
+            </div>
+            <div class="camp-info-item">
+              <span style="color: var(--text-muted); font-size: 0.9rem;">📅</span>
+              <span style="color: var(--text-secondary);">{{ c.start_date|format_date }} &ndash; {{ c.end_date|format_date }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.5rem;">
-        <span style="font-size: 0.8rem; color: var(--text-muted);">👨‍⚕️ {{ c.staff_count }} Medical Staff</span>
-        <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}" class="btn btn-sm btn-primary">
-          Camp Hub &rarr;
-        </a>
+        <!-- Target & Collection Progress HUD -->
+        <div class="camp-progress-container">
+          <div class="camp-progress-header">
+            <span style="color: var(--text-muted); font-weight: 500;">Intake Progress</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <strong style="color: #fff; font-family: var(--font-mono);">{{ c.units_collected }} / {{ c.target_units }}</strong>
+              <span style="font-size: 0.75rem; color: #38bdf8; background: rgba(56,189,248,0.12); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">
+                {{ pct }}%
+              </span>
+            </div>
+          </div>
+          <div class="camp-progress-track">
+            <div class="camp-progress-fill" style="width: {{ pct if pct <= 100 else 100 }}%;"></div>
+          </div>
+        </div>
+
+        <!-- Card Action Footer -->
+        <div class="camp-card-footer">
+          <span style="font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+            <span>👨‍⚕️</span> <strong>{{ c.staff_count }}</strong> Medical Staff
+          </span>
+          <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}" class="btn btn-sm btn-primary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600;">
+            Camp Hub &amp; Reviews &rarr;
+          </a>
+        </div>
       </div>
     </div>
   {% endfor %}
 </div>
+
+<!-- Empty State Filter Notice -->
+<div id="noCampsFound" style="display: none; text-align: center; padding: 3rem 1.5rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle);">
+  <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔍</div>
+  <h3 style="font-size: 1.25rem; color: #fff; margin-bottom: 0.35rem;">No Campuses Found</h3>
+  <p style="color: var(--text-secondary); font-size: 0.9rem;">No blood donation campuses match your search query.</p>
+</div>
+
+<script>
+function filterCampsLive() {
+  const query = document.getElementById("campSearchInput").value.toLowerCase().trim();
+  const cards = document.querySelectorAll(".camp-item-card");
+  let visibleCount = 0;
+
+  cards.forEach(card => {
+    const name = card.getAttribute("data-name") || "";
+    const city = card.getAttribute("data-city") || "";
+    const org = card.getAttribute("data-organizer") || "";
+
+    if (name.includes(query) || city.includes(query) || org.includes(query)) {
+      card.style.display = "flex";
+      visibleCount++;
+    } else {
+      card.style.display = "none";
+    }
+  });
+
+  const emptyNotice = document.getElementById("noCampsFound");
+  if (visibleCount === 0) {
+    emptyNotice.style.display = "block";
+  } else {
+    emptyNotice.style.display = "none";
+  }
+}
+</script>
 {% endblock %}

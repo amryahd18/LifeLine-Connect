@@ -1,60 +1,126 @@
 {% extends "base.html" %}
 
-{% block title %}Blood Dispatches & Audit Log | LifeLine Connect{% endblock %}
+{% block title %}Blood Dispatches &amp; Transit Audit Log | LifeLine Connect{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="badge" style="background: rgba(16,185,129,0.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35);">
+        🔒 IMMUTABLE ORACLE AUDIT LOG
+      </span>
+      <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.3);">
+        TRIGGER: TRG_AUDIT_DISPATCH
+      </span>
+    </div>
     <h1 class="page-title">Blood Dispatch &amp; Transit Audit Log</h1>
-    <p class="page-subtitle">Immutable log maintained by Oracle trigger TRG_AUDIT_DISPATCH on every verified physical fulfillment</p>
+    <p class="page-subtitle">Cryptographically verifiable and immutable audit ledger populated automatically by Oracle PL/SQL trigger upon physical unit release</p>
   </div>
-  <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">&larr; Back to Requests</a>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">&larr; Back to Requisitions</a>
+    <a href="{{ url_for('hospitals.index') }}" class="btn btn-outline">Hospital Directory</a>
+  </div>
 </div>
 
-<div class="glass-card">
+<!-- Dispatch Summary Telemetry -->
+<div class="hospital-telemetry-grid">
+  <div class="telemetry-kpi-card success-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Total Dispatches</span>
+      <span>📦</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #34d399;">{{ dispatches|length }} Records</div>
+    <div class="telemetry-kpi-subtext">Verified Chain of Custody</div>
+  </div>
+
+  <div class="telemetry-kpi-card info-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Logistics Carrier</span>
+      <span>🚚</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #38bdf8;">RapidMed</div>
+    <div class="telemetry-kpi-subtext">Cold-Chain Emergency Transit</div>
+  </div>
+
+  <div class="telemetry-kpi-card">
+    <div class="telemetry-kpi-header">
+      <span>Storage Temp Range</span>
+      <span>❄️</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #fff;">2°C – 6°C</div>
+    <div class="telemetry-kpi-subtext">Continuous Thermal Sensor Lock</div>
+  </div>
+</div>
+
+<div class="glass-card" style="padding: 0; overflow: hidden;">
   <div class="table-responsive">
     <table class="custom-table">
       <thead>
         <tr>
           <th>Dispatch ID</th>
-          <th>Request ID</th>
+          <th>Req Reference</th>
           <th>Unit ID</th>
           <th>Blood Group</th>
           <th>Component</th>
           <th>Destination Hospital</th>
-          <th>Dispatched On</th>
+          <th>Timestamp</th>
           <th>Transporter Logistics</th>
-          <th>Authorized Staff</th>
-          <th>Status</th>
+          <th>Authorized Officer</th>
+          <th>Delivery Status</th>
         </tr>
       </thead>
       <tbody>
         {% if dispatches %}
           {% for d in dispatches %}
             <tr>
-              <td><strong>#{{ d.dispatch_id }}</strong></td>
-              <td><a href="{{ url_for('hospitals.requests') }}">#{{ d.request_id }}</a></td>
-              <td><strong>#{{ d.unit_id }}</strong></td>
               <td>
-                <span class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af;">{{ d.blood_group }}</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #38bdf8;">
+                  #DSP-{{ d.dispatch_id }}
+                </span>
               </td>
-              <td>{{ d.component_type }}</td>
+              <td>
+                <a href="{{ url_for('hospitals.requests') }}" style="font-family: var(--font-mono); font-size: 0.85rem; color: #cbd5e1;">
+                  #REQ-{{ d.request_id }}
+                </a>
+              </td>
+              <td>
+                <span style="font-family: var(--font-mono); font-size: 0.85rem; color: #fff;">
+                  #UNIT-{{ d.unit_id }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-family: var(--font-mono); font-weight: 700;">
+                  {{ d.blood_group }}
+                </span>
+              </td>
+              <td>
+                <span class="component-tag">{{ d.component_type }}</span>
+              </td>
               <td>
                 <strong style="color: #fff;">{{ d.hospital_name }}</strong>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ d.destination_city }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">📍 {{ d.destination_city }}</div>
               </td>
-              <td style="font-size: 0.85rem;">{{ d.dispatch_date|format_date }}</td>
-              <td style="font-size: 0.85rem; color: var(--text-secondary);">{{ d.transporter_name }}</td>
-              <td style="font-size: 0.85rem;">{{ d.authorized_by or 'Operations Coordinator' }}</td>
+              <td style="font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap;">
+                {{ d.dispatch_date|format_date }}
+              </td>
+              <td style="font-size: 0.85rem; color: #cbd5e1;">
+                🚚 {{ d.transporter_name }}
+              </td>
+              <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                👨‍⚕️ {{ d.authorized_by or 'Operations Coordinator' }}
+              </td>
               <td>
-                <span class="badge badge-eligible">{{ d.delivery_status }}</span>
+                <span class="badge badge-eligible" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                  <span>✓</span> {{ d.delivery_status }}
+                </span>
               </td>
             </tr>
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-              No dispatch records recorded yet.
+            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📦</div>
+              <p>No dispatch audit records found yet.</p>
             </td>
           </tr>
         {% endif %}

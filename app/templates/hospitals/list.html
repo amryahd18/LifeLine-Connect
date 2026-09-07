@@ -5,17 +5,26 @@
 {% block content %}
 <div class="page-header">
   <div>
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="badge" style="background: rgba(16,185,129,0.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35);">
+        🏥 ACCREDITED HEALTHCARE NETWORK
+      </span>
+      <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.3);">
+        24/7 TRAUMA RESPONSE
+      </span>
+    </div>
     <h1 class="page-title">Registered Healthcare Facilities</h1>
-    <p class="page-subtitle">Partner trauma centers, government hospitals, and regional surgical facilities</p>
+    <p class="page-subtitle">Accredited level-1 trauma centers, government teaching hospitals, pediatric institutes, and surgical transfusion units across Sri Lanka</p>
   </div>
-  <div style="display: flex; gap: 0.75rem;">
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
     <a href="{{ url_for('hospitals.new_request') }}" class="btn btn-primary">+ Create Blood Requisition</a>
+    <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">View Active Requisitions</a>
     <a href="{{ url_for('hospitals.dispatches') }}" class="btn btn-outline">Dispatch Audit Log</a>
   </div>
 </div>
 
 <!-- Real Healthcare Facilities Hero Card -->
-<div class="camp-hero-banner" style="height: 240px;">
+<div class="camp-hero-banner" style="height: 240px; margin-bottom: 1.5rem;">
   <img src="{{ url_for('static', filename='images/venues/hospital_7001.jpg') }}" 
        onerror="this.src='{{ url_for('static', filename='images/venues/default_hospital.jpg') }}'" 
        alt="National Hospital of Sri Lanka (NHSL)" 
@@ -25,50 +34,122 @@
       <span class="badge" style="background: rgba(16,185,129,0.25); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); margin-bottom: 0.4rem;">
         🏥 Level-1 Emergency Clinical Facilities &amp; Blood Banks
       </span>
-      <h2 style="font-size: 1.6rem; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">National Clinical Transfusion Network</h2>
-      <p style="color: #cbd5e1; font-size: 0.88rem; text-shadow: 0 1px 4px rgba(0,0,0,0.8);">
-        Accredited government teaching hospitals, trauma emergency units, and specialized surgery centers across Sri Lanka
+      <h2 style="font-size: 1.75rem; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.8); margin-bottom: 0.25rem;">
+        National Clinical Transfusion Network
+      </h2>
+      <p style="color: #cbd5e1; font-size: 0.88rem; text-shadow: 0 1px 4px rgba(0,0,0,0.8); max-width: 780px;">
+        Accredited government teaching hospitals, trauma emergency units, and specialized surgery centers connected to the LifeLine Connect FEFO dispatch pipeline.
       </p>
     </div>
   </div>
 </div>
 
-<div class="glass-card">
+<!-- Telemetry KPI Summary -->
+<div class="hospital-telemetry-grid">
+  <div class="telemetry-kpi-card info-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Total Partner Facilities</span>
+      <span>🏥</span>
+    </div>
+    <div class="telemetry-kpi-value">{{ hospitals|length }} Centers</div>
+    <div class="telemetry-kpi-subtext">Colombo • Kandy • Galle • Dehiwala</div>
+  </div>
+
+  <div class="telemetry-kpi-card critical-alert">
+    <div class="telemetry-kpi-header">
+      <span>Trauma &amp; Specialty Hubs</span>
+      <span>🚨</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #fda4af;">Level-1 Centers</div>
+    <div class="telemetry-kpi-subtext">Equipped with 24/7 Transfusion Triage</div>
+  </div>
+
+  <div class="telemetry-kpi-card success-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Total Requisition Volume</span>
+      <span>⚡</span>
+    </div>
+    {% set total_orders = namespace(value=0) %}
+    {% for h in hospitals %}
+      {% set total_orders.value = total_orders.value + (h.total_requests or 0) %}
+    {% endfor %}
+    <div class="telemetry-kpi-value" style="color: #34d399;">{{ total_orders.value }} Orders</div>
+    <div class="telemetry-kpi-subtext">Automated Allocation Ready</div>
+  </div>
+
+  <div class="telemetry-kpi-card">
+    <div class="telemetry-kpi-header">
+      <span>Cold Chain Logistics</span>
+      <span>❄️</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #38bdf8;">100% Monitored</div>
+    <div class="telemetry-kpi-subtext">2°C – 6°C Live GPS Tracking</div>
+  </div>
+</div>
+
+<!-- Hospital Directory Table -->
+<div class="glass-card" style="padding: 0; overflow: hidden;">
   <div class="table-responsive">
     <table class="custom-table">
       <thead>
         <tr>
           <th>Hospital Name</th>
           <th>License No</th>
-          <th>Category</th>
+          <th>Clinical Category</th>
           <th>Contact Person</th>
-          <th>Phone &amp; Email</th>
+          <th>Emergency Contact</th>
           <th>Address &amp; City</th>
-          <th>Requisitions</th>
+          <th>Demand History</th>
+          <th style="text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for h in hospitals %}
           <tr>
             <td>
-              <strong style="color: #fff; font-size: 1rem;">{{ h.hospital_name }}</strong>
+              <strong style="color: #fff; font-size: 1rem; display: block;">{{ h.hospital_name }}</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Hospital ID: #HOSP-{{ h.hospital_id }}</span>
             </td>
-            <td><code>{{ h.license_no }}</code></td>
             <td>
-              <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc;">
-                {{ h.category }}
+              <span style="font-family: var(--font-mono); font-size: 0.8rem; background: rgba(255,255,255,0.06); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border-subtle); color: #cbd5e1;">
+                {{ h.license_no }}
               </span>
             </td>
-            <td>{{ h.contact_person }}</td>
-            <td style="font-size: 0.85rem;">
-              <div>{{ h.phone }}</div>
-              <div style="color: var(--text-muted);">{{ h.email }}</div>
-            </td>
-            <td style="font-size: 0.85rem; color: var(--text-secondary);">
-              {{ h.address }}, {{ h.city }}
+            <td>
+              {% if h.category == 'TRAUMA_CENTER' %}
+                <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; border: 1px solid rgba(225,29,72,0.4);">
+                  🚨 Level-1 Trauma
+                </span>
+              {% elif h.category == 'SPECIALTY_CLINIC' %}
+                <span class="badge" style="background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.4);">
+                  🩺 Pediatric / Specialty
+                </span>
+              {% else %}
+                <span class="badge" style="background: rgba(14,165,233,0.18); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.35);">
+                  🏛️ Teaching Hospital
+                </span>
+              {% endif %}
             </td>
             <td>
-              <span style="font-weight: 700; color: #38bdf8;">{{ h.total_requests }} Orders</span>
+              <div style="font-weight: 500; color: #e2e8f0;">{{ h.contact_person }}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Blood Bank Liaison</div>
+            </td>
+            <td style="font-size: 0.85rem;">
+              <div>📞 <strong>{{ h.phone }}</strong></div>
+              <div style="color: var(--text-muted); font-size: 0.8rem;">✉️ {{ h.email }}</div>
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-secondary);">
+              📍 {{ h.address }}, <strong>{{ h.city }}</strong>
+            </td>
+            <td>
+              <span style="font-weight: 700; color: #38bdf8; font-family: var(--font-mono); font-size: 0.95rem;">
+                {{ h.total_requests or 0 }} Orders
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{{ url_for('hospitals.new_request') }}" class="btn btn-sm btn-outline" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
+                + Request
+              </a>
             </td>
           </tr>
         {% endfor %}

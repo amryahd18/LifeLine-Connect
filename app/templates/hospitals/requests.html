@@ -3,56 +3,163 @@
 {% block title %}Hospital Blood Requisitions | LifeLine Connect{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Hospital Blood Requisitions</h1>
-    <p class="page-subtitle">Manage emergency demand orders and trigger automated FEFO inventory allocation</p>
-  </div>
-  <div style="display: flex; gap: 0.75rem;">
-    <a href="{{ url_for('hospitals.new_request') }}" class="btn btn-primary">+ New Blood Request</a>
-    <a href="{{ url_for('hospitals.dispatches') }}" class="btn btn-outline">Dispatch Audit History</a>
+<!-- Clinical Operations Hero Banner -->
+<div class="camp-hero-banner" style="height: 220px; margin-bottom: 1.5rem;">
+  <img src="{{ url_for('static', filename='images/venues/hospital_7001.jpg') }}" 
+       onerror="this.src='{{ url_for('static', filename='images/venues/default_hospital.jpg') }}'" 
+       alt="National Hospital of Sri Lanka (NHSL)" 
+       class="camp-hero-img">
+  <div class="camp-hero-overlay">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap;">
+          <span class="badge" style="background: rgba(225,29,72,0.3); color: #fda4af; border: 1px solid rgba(225,29,72,0.5);">
+            🚨 EMERGENCY DISPATCH CONTROL
+          </span>
+          <span class="badge" style="background: rgba(16,185,129,0.25); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4);">
+            ⚡ FEFO PL/SQL ENGINE ACTIVE
+          </span>
+        </div>
+        <h1 style="font-size: 1.9rem; font-weight: 800; color: #fff; text-shadow: 0 3px 12px rgba(0,0,0,0.9); margin-bottom: 0.35rem;">
+          Hospital Blood Requisitions &amp; Automated Allocation
+        </h1>
+        <p style="color: #cbd5e1; font-size: 0.9rem; text-shadow: 0 2px 6px rgba(0,0,0,0.9); max-width: 760px;">
+          National hospital demand matching with First-Expired-First-Out (FEFO) shelf-life prioritization, rapid emergency courier logistics, and immutable Oracle dispatch auditing.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <a href="{{ url_for('hospitals.new_request') }}" class="btn btn-primary" style="box-shadow: 0 0 16px var(--crimson-glow); font-weight: 700;">
+          + New Blood Request
+        </a>
+        <a href="{{ url_for('hospitals.dispatches') }}" class="btn btn-outline" style="background: rgba(6,9,17,0.7); backdrop-filter: blur(8px);">
+          Dispatch Audit History
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Filters -->
+<!-- Operational Telemetry Cards -->
+{% set total_demanded = namespace(value=0) %}
+{% set total_fulfilled = namespace(value=0) %}
+{% set critical_count = namespace(value=0) %}
+{% set pending_count = namespace(value=0) %}
+{% for r in requests %}
+  {% set total_demanded.value = total_demanded.value + r.units_requested %}
+  {% set total_fulfilled.value = total_fulfilled.value + r.units_fulfilled %}
+  {% if r.urgency_level == 'CRITICAL_EMERGENCY' %}
+    {% set critical_count.value = critical_count.value + 1 %}
+  {% endif %}
+  {% if r.status != 'DISPATCHED' %}
+    {% set pending_count.value = pending_count.value + 1 %}
+  {% endif %}
+{% endfor %}
+
+<div class="hospital-telemetry-grid">
+  <div class="telemetry-kpi-card info-kpi">
+    <div class="telemetry-kpi-header">
+      <span>Total Clinical Orders</span>
+      <span>📋</span>
+    </div>
+    <div class="telemetry-kpi-value">{{ requests|length }} Orders</div>
+    <div class="telemetry-kpi-subtext">{{ total_demanded.value }} Total Units Demanded</div>
+  </div>
+
+  <div class="telemetry-kpi-card {% if critical_count.value > 0 %}critical-alert{% endif %}">
+    <div class="telemetry-kpi-header">
+      <span>STAT Emergency Demands</span>
+      <span>🚨</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: {% if critical_count.value > 0 %}#ff4d6d{% else %}#fff{% endif %};">
+      {{ critical_count.value }} Critical
+    </div>
+    <div class="telemetry-kpi-subtext">Immediate Triage Priority</div>
+  </div>
+
+  <div class="telemetry-kpi-card success-kpi">
+    <div class="telemetry-kpi-header">
+      <span>FEFO Fulfilled Units</span>
+      <span>⚡</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #34d399;">
+      {{ total_fulfilled.value }} Units
+    </div>
+    <div class="telemetry-kpi-subtext">Verified Shelf-Life Allocation</div>
+  </div>
+
+  <div class="telemetry-kpi-card">
+    <div class="telemetry-kpi-header">
+      <span>Pending Allocation</span>
+      <span>⏳</span>
+    </div>
+    <div class="telemetry-kpi-value" style="color: #fbbf24;">
+      {{ pending_count.value }} Pending
+    </div>
+    <div class="telemetry-kpi-subtext">Ready for Cross-Matching</div>
+  </div>
+</div>
+
+<!-- Critical Triage Alert Bar (if critical requests exist) -->
+{% if critical_count.value > 0 %}
+  <div style="background: linear-gradient(90deg, rgba(225,29,72,0.2) 0%, rgba(225,29,72,0.05) 100%); border: 1px solid rgba(225,29,72,0.4); border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-size: 1.4rem; animation: statPulse 1.5s infinite;">🚨</span>
+      <div>
+        <strong style="color: #fda4af; font-size: 0.95rem;">URGENT CLINICAL TRIAGE NOTICE:</strong>
+        <span style="color: #cbd5e1; font-size: 0.88rem; margin-left: 0.25rem;">
+          {{ critical_count.value }} hospital orders require immediate STAT dispatch. Use 1-click FEFO to allocate oldest viable inventory.
+        </span>
+      </div>
+    </div>
+    <span class="badge badge-stat-critical">PRIORITY 1</span>
+  </div>
+{% endif %}
+
+<!-- Glassmorphism Filter & Search Control Panel -->
 <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.2rem;">
   <form method="GET" action="{{ url_for('hospitals.requests') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
-    <div style="flex: 1; min-width: 150px;">
-      <label class="form-label">Urgency Priority</label>
+    <div style="flex: 1; min-width: 160px;">
+      <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Urgency Priority</label>
       <select name="urgency" class="form-select">
         <option value="">All Priorities</option>
-        <option value="CRITICAL_EMERGENCY" {% if selected_urg == 'CRITICAL_EMERGENCY' %}selected{% endif %}>Critical Emergency</option>
-        <option value="URGENT" {% if selected_urg == 'URGENT' %}selected{% endif %}>Urgent</option>
-        <option value="NORMAL" {% if selected_urg == 'NORMAL' %}selected{% endif %}>Normal</option>
+        <option value="CRITICAL_EMERGENCY" {% if selected_urg == 'CRITICAL_EMERGENCY' %}selected{% endif %}>🚨 Critical Emergency</option>
+        <option value="URGENT" {% if selected_urg == 'URGENT' %}selected{% endif %}>⚠️ Urgent (Within 24h)</option>
+        <option value="NORMAL" {% if selected_urg == 'NORMAL' %}selected{% endif %}>Normal (Scheduled)</option>
       </select>
     </div>
 
-    <div style="flex: 1; min-width: 150px;">
-      <label class="form-label">Fulfillment Status</label>
+    <div style="flex: 1; min-width: 160px;">
+      <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Fulfillment Status</label>
       <select name="status" class="form-select">
         <option value="">All Statuses</option>
-        <option value="PENDING" {% if selected_st == 'PENDING' %}selected{% endif %}>Pending</option>
-        <option value="PARTIAL" {% if selected_st == 'PARTIAL' %}selected{% endif %}>Partial</option>
-        <option value="DISPATCHED" {% if selected_st == 'DISPATCHED' %}selected{% endif %}>Dispatched / Fulfilled</option>
+        <option value="PENDING" {% if selected_st == 'PENDING' %}selected{% endif %}>⏳ Pending</option>
+        <option value="PARTIAL" {% if selected_st == 'PARTIAL' %}selected{% endif %}>⚡ Partial</option>
+        <option value="DISPATCHED" {% if selected_st == 'DISPATCHED' %}selected{% endif %}>✓ Dispatched / Fulfilled</option>
         <option value="APPROVED" {% if selected_st == 'APPROVED' %}selected{% endif %}>Approved</option>
       </select>
     </div>
 
-    <div>
-      <button type="submit" class="btn btn-outline" style="height: 40px;">Apply Filter</button>
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Instant Live Search</label>
+      <input type="text" id="reqFilterInput" placeholder="Filter hospital, blood group, city..." onkeyup="filterRequestsTable()" class="form-control" style="height: 40px;">
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <button type="submit" class="btn btn-outline" style="height: 40px; padding: 0 1.25rem;">Filter</button>
       <a href="{{ url_for('hospitals.requests') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
     </div>
   </form>
 </div>
 
-<!-- Requisitions Table -->
-<div class="glass-card">
+<!-- Requisitions Cyber-Clinical Data Grid -->
+<div class="glass-card" style="padding: 0; overflow: hidden;">
   <div class="table-responsive">
-    <table class="custom-table">
+    <table class="custom-table" id="requisitionsTable">
       <thead>
         <tr>
-          <th>Req #</th>
-          <th>Hospital Name</th>
+          <th>Order ID</th>
+          <th>Healthcare Facility</th>
           <th>Blood Group</th>
           <th>Component</th>
           <th>Demanded</th>
@@ -60,55 +167,79 @@
           <th>Urgency</th>
           <th>Required By</th>
           <th>Status</th>
-          <th>Actions</th>
+          <th style="text-align: right;">Clinical Action</th>
         </tr>
       </thead>
       <tbody>
         {% if requests %}
           {% for r in requests %}
-            <tr>
-              <td><strong>#{{ r.request_id }}</strong></td>
+            <tr class="req-row" data-search="{{ r.hospital_name|lower }} {{ r.hospital_city|lower }} {{ r.blood_group|lower }} {{ r.component_type|lower }} {{ r.request_id }}">
               <td>
-                <strong style="color: #fff;">{{ r.hospital_name }}</strong>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ r.hospital_city }}</div>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: #38bdf8; font-size: 0.88rem;">
+                  #REQ-{{ r.request_id }}
+                </span>
               </td>
               <td>
-                <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 0.9rem;">
+                <div style="font-weight: 700; color: #fff; font-size: 0.96rem;">{{ r.hospital_name }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem;">
+                  <span>📍</span> {{ r.hospital_city }}
+                </div>
+              </td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.22); color: #fda4af; font-size: 0.95rem; font-family: var(--font-mono); font-weight: 800; border: 1px solid rgba(225,29,72,0.4); padding: 0.25rem 0.6rem;">
                   {{ r.blood_group }}
                 </span>
               </td>
-              <td>{{ r.component_type }}</td>
-              <td><strong style="color: #fff;">{{ r.units_requested }}</strong></td>
-              <td><strong style="color: #34d399;">{{ r.units_fulfilled }}</strong></td>
+              <td>
+                <span class="component-tag">{{ r.component_type }}</span>
+              </td>
+              <td>
+                <strong style="color: #fff; font-size: 1.05rem; font-family: var(--font-mono);">{{ r.units_requested }}</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Units</span>
+              </td>
+              <td>
+                <strong style="color: #34d399; font-size: 1.05rem; font-family: var(--font-mono);">{{ r.units_fulfilled }}</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Units</span>
+              </td>
               <td>
                 {% if r.urgency_level == 'CRITICAL_EMERGENCY' %}
-                  <span class="badge badge-critical">🚨 Critical</span>
+                  <span class="badge-stat-critical">🚨 STAT Critical</span>
                 {% elif r.urgency_level == 'URGENT' %}
-                  <span class="badge badge-deferred">Urgent</span>
+                  <span class="badge-urgent-amber">⚠️ Urgent (24h)</span>
                 {% else %}
-                  <span class="badge badge-active">Normal</span>
+                  <span class="badge-routine-blue">✓ Normal</span>
                 {% endif %}
               </td>
-              <td style="font-size: 0.85rem; color: var(--text-secondary);">
-                {{ r.required_by_date|format_date }}
+              <td style="font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap;">
+                📅 {{ r.required_by_date|format_date }}
               </td>
               <td>
                 {% if r.status == 'DISPATCHED' %}
-                  <span class="badge badge-eligible">Dispatched</span>
+                  <span class="badge badge-eligible" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                    <span>✓</span> Dispatched
+                  </span>
                 {% elif r.status == 'PARTIAL' %}
-                  <span class="badge badge-deferred">Partial</span>
+                  <span class="badge badge-deferred">⚡ Partial</span>
                 {% else %}
-                  <span class="badge" style="background: rgba(245,158,11,0.15); color: #fbbf24;">Pending</span>
+                  <span class="badge" style="background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35);">
+                    ⏳ Pending
+                  </span>
                 {% endif %}
               </td>
-              <td>
+              <td style="text-align: right;">
                 {% if r.status != 'DISPATCHED' %}
-                  <button type="button" class="btn btn-sm btn-primary" onclick="launchFefoSim('{{ r.request_id }}', '{{ r.hospital_name }}', '{{ r.blood_group }}', '{{ r.units_requested }}', '{{ r.component_type }}')">
+                  <button type="button" 
+                          class="btn btn-sm btn-primary" 
+                          style="box-shadow: 0 0 10px rgba(225,29,72,0.35); font-weight: 600;"
+                          onclick="launchFefoSim('{{ r.request_id }}', '{{ r.hospital_name }}', '{{ r.blood_group }}', '{{ r.units_requested }}', '{{ r.component_type }}')">
                     ⚡ FEFO Fulfill
                   </button>
                 {% else %}
-                  <button class="btn btn-sm btn-outline" onclick="printManifest('{{ r.request_id }}', '{{ r.hospital_name }}', '{{ r.blood_group }}', '{{ r.units_fulfilled }}')" style="font-size:0.75rem; color:#34d399; border-color:rgba(16,185,129,0.4);">
-                    🧾 Manifest
+                  <button type="button" 
+                          class="btn btn-sm btn-outline" 
+                          onclick="printManifest('{{ r.request_id }}', '{{ r.hospital_name }}', '{{ r.blood_group }}', '{{ r.units_fulfilled }}')" 
+                          style="font-size: 0.78rem; color: #34d399; border-color: rgba(16,185,129,0.4); display: inline-flex; align-items: center; gap: 0.3rem;">
+                    <span>🧾</span> Manifest
                   </button>
                 {% endif %}
               </td>
@@ -116,8 +247,9 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-              No blood requisitions matching filter.
+            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+              <p>No hospital blood requisitions found matching current criteria.</p>
             </td>
           </tr>
         {% endif %}
@@ -128,52 +260,66 @@
 
 <!-- Interactive FEFO Dispatch Simulation Modal -->
 <div id="fefo-modal" class="palette-backdrop" style="align-items: center; padding-top: 0;">
-  <div class="palette-modal" style="max-width: 620px; padding: 1.75rem;">
+  <div class="palette-modal" style="max-width: 640px; padding: 2rem; border-radius: var(--radius-xl); border: 1px solid rgba(225,29,72,0.4); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(225,29,72,0.25);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-      <h3 style="font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>⚡</span> Automated FEFO Dispatch Pipeline
-      </h3>
-      <button onclick="closeFefoModal()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.5rem;">&times;</button>
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <span style="font-size: 1.5rem;">⚡</span>
+        <div>
+          <h3 style="font-size: 1.25rem; color: #fff; margin: 0;">Automated FEFO Allocation Pipeline</h3>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">PKG_LIFELINE_CORE.sp_fulfill_hospital_request</span>
+        </div>
+      </div>
+      <button onclick="closeFefoModal()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.75rem; line-height: 1;">&times;</button>
     </div>
 
-    <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
-      <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-        <span>Target Hospital: <strong id="fefo-hospital" style="color: #fff;">-</strong></span>
-        <span>Requisition: <strong id="fefo-req-id" style="color: #38bdf8;">-</strong></span>
+    <div style="background: rgba(13, 21, 39, 0.95); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-secondary);">Target Hospital:</span>
+        <strong id="fefo-hospital" style="color: #fff;">-</strong>
       </div>
-      <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-top: 0.3rem;">
-        <span>Component: <strong id="fefo-component" style="color: #fda4af;">-</strong></span>
-        <span>Required: <strong id="fefo-units" style="color: #34d399;">-</strong></span>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-secondary);">Requisition Reference:</span>
+        <strong id="fefo-req-id" style="color: #38bdf8; font-family: var(--font-mono);">-</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+        <span style="color: var(--text-secondary);">Component &amp; Group:</span>
+        <strong id="fefo-component" style="color: #fda4af;">-</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+        <span style="color: var(--text-secondary);">Required Quantity:</span>
+        <strong id="fefo-units" style="color: #34d399; font-size: 1.05rem;">-</strong>
       </div>
     </div>
 
     <!-- Stepper Pipeline -->
-    <div id="fefo-steps" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem; margin-bottom: 1.25rem;">
-      <div id="step-1" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted);">
-        <span>⚪</span> <span>1. Scan Oracle RDBMS for oldest non-expired shelf-life unit (FEFO)</span>
+    <div id="fefo-steps" style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.86rem; margin-bottom: 1.4rem;">
+      <div id="step-1" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); transition: color 0.3s ease;">
+        <span>⚪</span> <span>1. Query Oracle RDBMS for oldest non-expired inventory (FEFO algorithm)</span>
       </div>
-      <div id="step-2" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted);">
-        <span>⚪</span> <span>2. Execute PKG_LIFELINE_CORE.sp_fulfill_hospital_request</span>
+      <div id="step-2" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); transition: color 0.3s ease;">
+        <span>⚪</span> <span>2. Execute PL/SQL Procedure: PKG_LIFELINE_CORE.sp_fulfill_hospital_request</span>
       </div>
-      <div id="step-3" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted);">
-        <span>⚪</span> <span>3. Trigger TRG_AUDIT_DISPATCH &amp; write immutable audit ledger</span>
+      <div id="step-3" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); transition: color 0.3s ease;">
+        <span>⚪</span> <span>3. Trigger TRG_AUDIT_DISPATCH &amp; commit immutable dispatch ledger row</span>
       </div>
-      <div id="step-4" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted);">
-        <span>⚪</span> <span>4. Generate Cold-Chain Transport Barcode &amp; Consignment ID</span>
+      <div id="step-4" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); transition: color 0.3s ease;">
+        <span>⚪</span> <span>4. Generate Cold-Chain Transport Barcode #LL-DISP-9941 &amp; Consignment ID</span>
       </div>
-      <div id="step-5" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted);">
-        <span>⚪</span> <span>5. Dispatch RapidMed Emergency Logistics (ETA: 18 mins)</span>
+      <div id="step-5" style="display: flex; align-items: center; gap: 0.75rem; color: var(--text-muted); transition: color 0.3s ease;">
+        <span>⚪</span> <span>5. Hand off to RapidMed Emergency Logistics Unit #04 (ETA: 18 mins)</span>
       </div>
     </div>
 
     <!-- Courier Live Transit Widget (shown after step 5) -->
-    <div id="transit-box" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+    <div id="transit-box" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <strong style="color: #34d399;">🚚 Courier En Route: RapidMed Unit #04</strong>
-        <span class="badge badge-critical" id="eta-countdown">ETA: 18:00</span>
+        <strong style="color: #34d399; font-size: 0.95rem;">🚚 Courier En Route: RapidMed Unit #04</strong>
+        <span class="badge badge-critical" id="eta-countdown" style="font-family: var(--font-mono);">ETA: 18:00</span>
       </div>
-      <div style="font-size: 0.8rem; color: #e2e8f0; margin-top: 0.4rem;">
-        Temp Sensor: <strong style="color: #34d399;">3.8°C</strong> • Cold-Chain Integrity: <strong style="color: #38bdf8;">SECURE</strong> • GPS Lock: <strong style="color: #fff;">LIVE</strong>
+      <div style="font-size: 0.82rem; color: #e2e8f0; margin-top: 0.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <span>Temp Sensor: <strong style="color: #34d399;">3.8°C</strong></span>
+        <span>Cold Chain: <strong style="color: #38bdf8;">SECURE</strong></span>
+        <span>GPS Beacon: <strong style="color: #fff;">LOCKED (NHSL Route)</strong></span>
       </div>
     </div>
 
@@ -181,7 +327,7 @@
       <input type="hidden" name="transporter_name" value="RapidMed Emergency Logistics Unit #04">
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
         <button type="button" class="btn btn-outline" onclick="closeFefoModal()">Cancel</button>
-        <button type="button" id="btn-start-fefo" class="btn btn-primary" onclick="runFefoSimulation()">
+        <button type="button" id="btn-start-fefo" class="btn btn-primary" onclick="runFefoSimulation()" style="font-weight: 700;">
           🚀 Run FEFO Allocation &amp; Dispatch
         </button>
       </div>
@@ -194,7 +340,7 @@ let currentFefoReqId = null;
 
 function launchFefoSim(reqId, hospName, bg, units, comp) {
   currentFefoReqId = reqId;
-  document.getElementById("fefo-req-id").innerText = `#${reqId}`;
+  document.getElementById("fefo-req-id").innerText = `#REQ-${reqId}`;
   document.getElementById("fefo-hospital").innerText = hospName;
   document.getElementById("fefo-component").innerText = `${bg} (${comp})`;
   document.getElementById("fefo-units").innerText = `${units} Units`;
@@ -210,6 +356,7 @@ function launchFefoSim(reqId, hospName, bg, units, comp) {
   document.getElementById("transit-box").style.display = "none";
   document.getElementById("btn-start-fefo").innerText = "🚀 Run FEFO Allocation & Dispatch";
   document.getElementById("btn-start-fefo").disabled = false;
+  document.getElementById("btn-start-fefo").style.background = "";
 
   document.getElementById("fefo-modal").classList.add("open");
 }
@@ -221,7 +368,7 @@ function closeFefoModal() {
 function runFefoSimulation() {
   const btn = document.getElementById("btn-start-fefo");
   btn.disabled = true;
-  btn.innerText = "Processing Pipeline...";
+  btn.innerText = "Processing FEFO Allocation...";
 
   const steps = [
     { id: 1, text: "Oldest expiring inventory unit identified in Oracle DB" },
@@ -238,7 +385,7 @@ function runFefoSimulation() {
       stepEl.style.color = "#34d399";
       stepEl.children[0].innerText = "🟢";
       current++;
-      setTimeout(advance, 400);
+      setTimeout(advance, 350);
     } else {
       document.getElementById("transit-box").style.display = "block";
       btn.innerText = "✓ Finalize & Submit to Oracle";
@@ -250,29 +397,53 @@ function runFefoSimulation() {
   advance();
 }
 
+function filterRequestsTable() {
+  const query = document.getElementById("reqFilterInput").value.toLowerCase().trim();
+  const rows = document.querySelectorAll(".req-row");
+
+  rows.forEach(row => {
+    const searchData = row.getAttribute("data-search") || "";
+    if (searchData.includes(query)) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
+
 function printManifest(reqId, hospName, bg, units) {
   const win = window.open("", "_blank");
   win.document.write(`
     <html>
-    <head><title>Clinical Dispatch Manifest #${reqId}</title>
+    <head><title>Clinical Dispatch Manifest #REQ-${reqId}</title>
     <style>
-      body { font-family: sans-serif; padding: 2rem; color: #111; }
-      .manifest { border: 2px solid #333; padding: 1.5rem; max-width: 600px; margin: auto; }
-      .header { border-bottom: 2px solid #e11d48; padding-bottom: 1rem; margin-bottom: 1rem; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2.5rem; color: #0f172a; background: #fff; }
+      .manifest { border: 2px solid #0f172a; padding: 2rem; max-width: 640px; margin: auto; border-radius: 8px; }
+      .header { border-bottom: 2px solid #e11d48; padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
+      .badge { display: inline-block; padding: 4px 10px; background: #fee2e2; color: #991b1b; font-weight: bold; border-radius: 4px; }
+      .data-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
     </style>
     </head>
     <body>
       <div class="manifest">
         <div class="header">
-          <h2>LIFELINE CONNECT - CLINICAL DISPATCH MANIFEST</h2>
-          <p>Order Reference: #${reqId} • Transporter: RapidMed Unit #04</p>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; color:#e11d48; letter-spacing:-0.5px;">LIFELINE CONNECT</h2>
+            <span class="badge">OFFICIAL CLINICAL DISPATCH</span>
+          </div>
+          <p style="margin: 0.5rem 0 0 0; color:#64748b; font-size:0.9rem;">Order Ref: #REQ-${reqId} • Transporter: RapidMed Unit #04</p>
         </div>
-        <p><strong>Destination Hospital:</strong> ${hospName}</p>
-        <p><strong>Allocated Blood Group:</strong> ${bg}</p>
-        <p><strong>Fulfilled Units:</strong> ${units} Units (FEFO Verified)</p>
-        <p><strong>Cold Chain Guarantee:</strong> Maintained at 2°C – 6°C with RFID Temp Logger</p>
-        <div style="margin-top: 2rem; border-top: 1px dashed #666; padding-top: 1rem;">
-          <p>Verified by Phlebotomist / Lab Scientist: __________________________</p>
+        <div class="data-row"><strong>Destination Hospital:</strong> <span>${hospName}</span></div>
+        <div class="data-row"><strong>Allocated Blood Group:</strong> <span>${bg}</span></div>
+        <div class="data-row"><strong>Fulfilled Units:</strong> <span>${units} Unit(s) (FEFO Verified)</span></div>
+        <div class="data-row"><strong>Cold Chain Guarantee:</strong> <span>Maintained at 2°C – 6°C with RFID Temp Sensor</span></div>
+        <div class="data-row"><strong>Oracle Transaction Hash:</strong> <span style="font-family:monospace; font-size:0.8rem;">0x7F2A...DB91</span></div>
+        <div style="margin-top: 2.5rem; border-top: 1px dashed #94a3b8; padding-top: 1.25rem;">
+          <p style="font-size:0.9rem; margin-bottom:2rem;">Received in good condition by Hospital Blood Bank Officer:</p>
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#475569;">
+            <span>Signature: __________________________</span>
+            <span>Date &amp; Time: __________________</span>
+          </div>
         </div>
       </div>
       <script>window.print();<\/script>

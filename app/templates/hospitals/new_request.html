@@ -5,41 +5,53 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">Create Hospital Blood Requisition</h1>
-    <p class="page-subtitle">Submit clinical blood orders for surgery prep, trauma triage, or scheduled transfusions</p>
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; border: 1px solid rgba(225,29,72,0.4);">
+        🚨 CLINICAL REQUISITION INTAKE
+      </span>
+      <span class="badge" style="background: rgba(16,185,129,0.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35);">
+        ⚡ AUTOMATED FEFO CROSS-MATCH
+      </span>
+    </div>
+    <h1 class="page-title">Submit Hospital Blood Requisition</h1>
+    <p class="page-subtitle">Initiate clinical blood demand matching for emergency trauma triage, surgical preparation, or pediatric care</p>
   </div>
-  <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">&larr; Back to Requests</a>
+  <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">&larr; Back to Requisitions</a>
 </div>
 
-<div class="glass-card" style="max-width: 750px; margin: 0 auto;">
+<div class="glass-card" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
   <form method="POST" action="{{ url_for('hospitals.new_request') }}">
+    <!-- Facility & Urgency -->
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">Requesting Hospital *</label>
-        <select name="hospital_id" class="form-select" required>
-          <option value="">-- Choose Hospital --</option>
+        <label class="form-label">Requesting Healthcare Facility *</label>
+        <select name="hospital_id" class="form-select" required style="height: 44px;">
+          <option value="">-- Select Accredited Hospital --</option>
           {% for h in hospitals %}
             <option value="{{ h.hospital_id }}">
-              {{ h.hospital_name }} ({{ h.category }}) - {{ h.city }}
+              {{ h.hospital_name }} ({{ h.category }}) &bull; {{ h.city }}
             </option>
           {% endfor %}
         </select>
+        <small style="color: var(--text-muted); font-size: 0.78rem;">Destination facility for cold-chain transport delivery</small>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Urgency Level *</label>
-        <select name="urgency_level" class="form-select" required>
-          <option value="CRITICAL_EMERGENCY">🚨 Critical Emergency (Stat / Immediate)</option>
+        <label class="form-label">Urgency Priority Level *</label>
+        <select name="urgency_level" class="form-select" required style="height: 44px;">
+          <option value="CRITICAL_EMERGENCY">🚨 Critical Emergency (Stat / Immediate Triage)</option>
           <option value="URGENT">⚠️ Urgent (Within 24 Hours)</option>
           <option value="NORMAL" selected>Normal (Scheduled / 48-72 Hours)</option>
         </select>
+        <small style="color: var(--text-muted); font-size: 0.78rem;">Critical orders trigger high-priority courier routing</small>
       </div>
     </div>
 
-    <div class="form-grid">
+    <!-- Blood Group & Component -->
+    <div class="form-grid" style="margin-top: 0.5rem;">
       <div class="form-group">
-        <label class="form-label">Target Blood Group *</label>
-        <select name="blood_group" class="form-select" required>
+        <label class="form-label">Required ABO/Rh Blood Group *</label>
+        <select name="blood_group" class="form-select" required style="height: 44px; font-family: var(--font-mono); font-weight: 700;">
           {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
             <option value="{{ bg }}">{{ bg }}</option>
           {% endfor %}
@@ -47,36 +59,51 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Component Type *</label>
-        <select name="component_type" class="form-select" required>
-          <option value="WHOLE_BLOOD">Whole Blood</option>
-          <option value="RBC" selected>Packed Red Blood Cells (RBC)</option>
-          <option value="PLATELETS">Platelets Concentrate</option>
+        <label class="form-label">Blood Component Type *</label>
+        <select name="component_type" class="form-select" required style="height: 44px;">
+          <option value="WHOLE_BLOOD">Whole Blood (WB)</option>
+          <option value="RBC" selected>Packed Red Blood Cells (PRBC)</option>
+          <option value="PLATELETS">Platelet Concentrate (PLT)</option>
           <option value="PLASMA">Fresh Frozen Plasma (FFP)</option>
         </select>
       </div>
     </div>
 
-    <div class="form-grid">
+    <!-- Quantity & Date -->
+    <div class="form-grid" style="margin-top: 0.5rem;">
       <div class="form-group">
         <label class="form-label">Units Demanded *</label>
-        <input type="number" name="units_requested" class="form-control" required value="2" min="1" max="50">
+        <input type="number" name="units_requested" class="form-control" required value="2" min="1" max="50" style="height: 44px; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700;">
+        <small style="color: var(--text-muted); font-size: 0.78rem;">Quantity of 450ml units needed</small>
       </div>
 
       <div class="form-group">
         <label class="form-label">Required By Date *</label>
-        <input type="date" name="required_by_date" class="form-control" required value="2026-09-06">
+        <input type="date" name="required_by_date" class="form-control" required value="2026-09-09" style="height: 44px;">
+        <small style="color: var(--text-muted); font-size: 0.78rem;">Target transfusion deadline</small>
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Clinical Indication &amp; Patient Case</label>
-      <textarea name="notes" rows="3" class="form-control" placeholder="Trauma resuscitation, scheduled CABG surgery, severe anemia..."></textarea>
+    <!-- Clinical Indication / Notes -->
+    <div class="form-group" style="margin-top: 0.5rem;">
+      <label class="form-label">Clinical Indication &amp; Case Notes</label>
+      <textarea name="notes" rows="3" class="form-control" placeholder="Specify clinical indication: e.g. acute traumatic hemorrhage, elective cardiovascular bypass, oncological thrombocytopenia, or postpartum hemorrhage..."></textarea>
     </div>
 
-    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+    <!-- FEFO Pipeline Notice Box -->
+    <div style="background: rgba(13, 21, 39, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; margin-top: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+      <span style="font-size: 1.25rem;">⚡</span>
+      <div style="font-size: 0.84rem; color: #cbd5e1;">
+        <strong style="color: #fff;">Automated Oracle PL/SQL Verification:</strong>
+        Upon submission, the requisition is queued in Oracle Database. The system algorithm automatically cross-references active donor inventory and prioritizes oldest non-expired units to minimize discard rates.
+      </div>
+    </div>
+
+    <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 1rem; align-items: center;">
       <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">Cancel</a>
-      <button type="submit" class="btn btn-primary">Submit Blood Requisition</button>
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 700; box-shadow: 0 0 16px var(--crimson-glow);">
+        Submit Requisition &rarr;
+      </button>
     </div>
   </form>
 </div>
