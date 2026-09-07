@@ -76,6 +76,8 @@ To solve this, LifeLine Connect combines **Oracle Database 21c (Relational/SQL)*
 
 The architecture adheres to clean separation of concerns across clinical, data, and presentation tiers:
 
+![End-to-End System Architecture](docs/system_architecture_diagram.jpg)
+
 ```mermaid
 graph TD
     Client[Web Browser / Modern UI Client] -->|HTTP / REST API| FlaskCore[Flask Application Factory]

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeLine Connect - System Architecture Diagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0b0f17;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #f1f5f9;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .card {
+    background: linear-gradient(145deg, #111827 0%, #0d131f 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 36px 44px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(225, 29, 72, 0.15);
+    max-width: 1280px;
+    width: 100%;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 20px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 5px 14px;
+    background: rgba(225, 29, 72, 0.15);
+    color: #fb7185;
+    border: 1px solid rgba(225, 29, 72, 0.3);
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  h1 span { color: #f43f5e; }
+  p.subtitle {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div class="badge">End-to-End System Architecture</div>
+    <h1>LifeLine Connect <span>Hybrid Database Platform</span></h1>
+    <p class="subtitle">National Blood Transfusion Service (NBTS) Sri Lanka — Python Flask MVC • Oracle 21c SQL • MongoDB 8.0 NoSQL</p>
+  </div>
+
+  <!-- Vector SVG System Architecture Diagram -->
+  <svg viewBox="0 0 1160 840" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Gradients -->
+      <linearGradient id="clientGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#1d4ed8"/>
+      </linearGradient>
+      <linearGradient id="flaskGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e11d48"/>
+        <stop offset="100%" stop-color="#be123c"/>
+      </linearGradient>
+      <linearGradient id="blueprintGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1e293b"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="oracleGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ea580c"/>
+        <stop offset="100%" stop-color="#c2410c"/>
+      </linearGradient>
+      <linearGradient id="mongoGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#047857"/>
+      </linearGradient>
+      <filter id="glowRed" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#e11d48" flood-opacity="0.3"/>
+      </filter>
+      <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#3b82f6" flood-opacity="0.3"/>
+      </filter>
+      <filter id="glowOrange" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#ea580c" flood-opacity="0.3"/>
+      </filter>
+      <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#10b981" flood-opacity="0.3"/>
+      </filter>
+
+      <!-- Markers -->
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b"/>
+      </marker>
+      <marker id="arrowCrimson" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="#f43f5e"/>
+      </marker>
+      <marker id="arrowOracle" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="#fb923c"/>
+      </marker>
+      <marker id="arrowMongo" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+      </marker>
+    </defs>
+
+    <!-- 1. Top Client Presentation Tier -->
+    <rect x="360" y="20" width="440" height="64" rx="14" fill="url(#clientGrad)" filter="url(#glowBlue)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="580" y="50" font-family="'Plus Jakarta Sans', sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">💻 Web Browser / Modern UI Client</text>
+    <text x="580" y="70" font-family="'JetBrains Mono', monospace" font-size="12" fill="#bfdbfe" text-anchor="middle">Dashboard • Logistics Radar • SQL Studio • Holographic Pass</text>
+
+    <!-- Arrow Client -> Flask -->
+    <path d="M 580 84 L 580 126" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="4,4" marker-end="url(#arrowCrimson)"/>
+    <rect x="520" y="96" width="120" height="20" rx="4" fill="#1e293b" stroke="rgba(255,255,255,0.1)"/>
+    <text x="580" y="110" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fca5a5" text-anchor="middle">HTTP / REST API</text>
+
+    <!-- 2. Flask Application Factory -->
+    <rect x="340" y="130" width="480" height="66" rx="14" fill="url(#flaskGrad)" filter="url(#glowRed)" stroke="#fda4af" stroke-width="1.5"/>
+    <text x="580" y="159" font-family="'Plus Jakarta Sans', sans-serif" font-size="18" font-weight="800" fill="#ffffff" text-anchor="middle">🐍 Flask Core Application Factory</text>
+    <text x="580" y="180" font-family="'JetBrains Mono', monospace" font-size="12" fill="#ffe4e6" text-anchor="middle">app = create_app() • Session RBAC • Template Context • Middleware</text>
+
+    <!-- Bracket / Group: 11 Blueprints Layer -->
+    <rect x="30" y="235" width="1100" height="230" rx="16" fill="#0f172a" fill-opacity="0.65" stroke="rgba(255,255,255,0.12)" stroke-dasharray="6,6"/>
+    <text x="55" y="260" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="800" fill="#94a3b8" letter-spacing="1">CONTROLLER LAYER (11 MODULAR BLUEPRINTS)</text>
+
+    <!-- Downward distribution paths -->
+    <path d="M 580 196 L 580 235" stroke="#f43f5e" stroke-width="2.5"/>
+
+    <!-- Row 1: 6 Blueprints -->
+    <!-- BP 1: Main / Dashboard -->
+    <rect x="50" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="130" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">📊 Main & Dashboard</text>
+    <text x="130" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/ (Metrics & HUD)</text>
+
+    <!-- BP 2: Donors -->
+    <rect x="230" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="310" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🩸 Donors Registry</text>
+    <text x="310" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/donors/ (NIC & Dossier)</text>
+
+    <!-- BP 3: Camps -->
+    <rect x="410" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="490" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">⛺ Donation Camps</text>
+    <text x="490" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/camps/ (Venues & Slots)</text>
+
+    <!-- BP 4: Inventory -->
+    <rect x="590" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="670" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🧪 Blood Inventory</text>
+    <text x="670" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/inventory/ (FEFO Cryo)</text>
+
+    <!-- BP 5: Hospitals -->
+    <rect x="770" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="850" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🏥 Hospital Requests</text>
+    <text x="850" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/hospitals/ (Dispatches)</text>
+
+    <!-- BP 6: Emergency Appeals -->
+    <rect x="950" y="280" width="160" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="1030" y="306" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🚨 Appeals Board</text>
+    <text x="1030" y="325" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/appeals/ (Pledges)</text>
+
+    <!-- Row 2: 5 Blueprints -->
+    <!-- BP 7: PL/SQL Reports -->
+    <rect x="100" y="370" width="180" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="190" y="396" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">📈 5 PL/SQL Reports</text>
+    <text x="190" y="415" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/reports/1 to 5</text>
+
+    <!-- BP 8: Auth RBAC -->
+    <rect x="300" y="370" width="170" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="385" y="396" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🔑 RBAC Authentication</text>
+    <text x="385" y="415" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/auth/ (4 User Tiers)</text>
+
+    <!-- BP 9: Logistics & IoT -->
+    <rect x="490" y="370" width="180" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="580" y="396" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🗺️ Logistics Radar & IoT</text>
+    <text x="580" y="415" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/logistics/ (Sri Lanka Map)</text>
+
+    <!-- BP 10: AI Forecaster -->
+    <rect x="690" y="370" width="180" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="780" y="396" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🤖 AI Shortage Engine</text>
+    <text x="780" y="415" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/analytics/forecaster</text>
+
+    <!-- BP 11: Database Explorer -->
+    <rect x="890" y="370" width="180" height="64" rx="10" fill="url(#blueprintGrad)" stroke="rgba(255,255,255,0.15)"/>
+    <text x="980" y="396" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">🗄️ Database Explorer</text>
+    <text x="980" y="415" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8" text-anchor="middle">/database/ (SQL Studio)</text>
+
+    <!-- 3. Dual Connector Layer -->
+    <!-- Left: Oracle Connector Pool -->
+    <path d="M 330 465 L 330 515" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrowOracle)"/>
+    <rect x="130" y="515" width="400" height="60" rx="12" fill="#1e1b18" stroke="#f97316" stroke-width="1.5"/>
+    <text x="330" y="542" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="800" fill="#ffedd5" text-anchor="middle">🔌 Oracle Connection Pool (oracledb)</text>
+    <text x="330" y="562" font-family="'JetBrains Mono', monospace" font-size="11" fill="#fed7aa" text-anchor="middle">Thick/Thin Pool • Cursors • Transaction Safety • Exceptions</text>
+
+    <!-- Right: MongoDB PyMongo Client -->
+    <path d="M 830 465 L 830 515" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrowMongo)"/>
+    <rect x="630" y="515" width="400" height="60" rx="12" fill="#061c14" stroke="#10b981" stroke-width="1.5"/>
+    <text x="830" y="542" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="800" fill="#d1fae5" text-anchor="middle">🍃 MongoDB Client (pymongo)</text>
+    <text x="830" y="562" font-family="'JetBrains Mono', monospace" font-size="11" fill="#a7f3d0" text-anchor="middle">Connection Pool • Document Serializer • Pipeline Aggregator</text>
+
+    <!-- Paths from Connector to DB -->
+    <path d="M 330 575 L 330 625" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrowOracle)"/>
+    <path d="M 830 575 L 830 625" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrowMongo)"/>
+
+    <!-- 4. Persistence Layer -->
+    <!-- Left: Oracle Database 21c -->
+    <rect x="80" y="625" width="500" height="180" rx="16" fill="url(#oracleGrad)" filter="url(#glowOrange)" stroke="#ffedd5" stroke-width="1.5"/>
+    <text x="330" y="658" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">🗄️ Oracle Database 21c Express Edition</text>
+    <text x="330" y="682" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="600" fill="#ffedd5" text-anchor="middle">localhost:1521/XEPDB1 • Schema: LIFELINE_USER</text>
+    
+    <!-- Oracle Features Grid inside box -->
+    <rect x="105" y="700" width="450" height="85" rx="8" fill="#1c1917" fill-opacity="0.8" stroke="rgba(255,255,255,0.2)"/>
+    <text x="120" y="722" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#fed7aa">✓ 11 Relational Tables (DONORS, INVENTORY, HOSPITALS...)</text>
+    <text x="120" y="742" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#fed7aa">✓ First-Expiry-First-Out (FEFO) Stored Procedures & Cursors</text>
+    <text x="120" y="762" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#fed7aa">✓ 5 PL/SQL Ref Cursor Business Intelligence Reports</text>
+    <text x="120" y="778" font-family="'JetBrains Mono', monospace" font-size="11" fill="#cbd5e1">✓ Clinical Audit Triggers & Expiration Safety Check Guards</text>
+
+    <!-- Right: MongoDB 8.0 -->
+    <rect x="580" y="625" width="500" height="180" rx="16" fill="url(#mongoGrad)" filter="url(#glowGreen)" stroke="#d1fae5" stroke-width="1.5"/>
+    <text x="830" y="658" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="800" fill="#ffffff" text-anchor="middle">🍃 MongoDB 8.0 Document Database</text>
+    <text x="830" y="682" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="600" fill="#d1fae5" text-anchor="middle">mongodb://localhost:27017 • DB: lifeline_connect</text>
+    
+    <!-- MongoDB Features Grid inside box -->
+    <rect x="605" y="700" width="450" height="85" rx="8" fill="#062118" fill-opacity="0.8" stroke="rgba(255,255,255,0.2)"/>
+    <text x="620" y="722" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#a7f3d0">✓ emergency_appeals (Real-Time Requests & Donor Pledges)</text>
+    <text x="620" y="742" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#a7f3d0">✓ camp_feedback (Multi-Dimensional Ratings & Reviews)</text>
+    <text x="620" y="762" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#a7f3d0">✓ campaign_media (Educational Assets, Guidelines, Media)</text>
+    <text x="620" y="778" font-family="'JetBrains Mono', monospace" font-size="11" fill="#cbd5e1">✓ Aggregation Pipelines ($match, $group, $sort) & Text Index</text>
+  </svg>
+</div>
+
+</body>
+</html>
