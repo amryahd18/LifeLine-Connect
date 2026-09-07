@@ -634,19 +634,133 @@ document.addEventListener("DOMContentLoaded", function () {
     const key = e.key.toUpperCase();
     if (key === "I") {
       playSoftClick();
-      window.location.href = "/inventory/donate";
+      triggerLoadingTransition("/inventory/donate");
+      setTimeout(() => { window.location.href = "/inventory/donate"; }, 200);
     } else if (key === "D") {
       playSoftClick();
-      window.location.href = "/hospitals/requests";
+      triggerLoadingTransition("/hospitals/requests");
+      setTimeout(() => { window.location.href = "/hospitals/requests"; }, 200);
     } else if (key === "A") {
       playSoftClick();
-      window.location.href = "/appeals/new";
+      triggerLoadingTransition("/appeals/new");
+      setTimeout(() => { window.location.href = "/appeals/new"; }, 200);
     } else if (key === "R") {
       playSoftClick();
-      window.location.href = "/logistics/";
+      triggerLoadingTransition("/logistics/");
+      setTimeout(() => { window.location.href = "/logistics/"; }, 200);
     } else if (key === "S") {
       playSoftClick();
-      window.location.href = "/database/";
+      triggerLoadingTransition("/database/");
+      setTimeout(() => { window.location.href = "/database/"; }, 200);
+    }
+  });
+
+  // ==========================================================================
+  // 13. HIGH-TECH CLINICAL LOADING SYSTEM & PAGE TRANSITIONS
+  // ==========================================================================
+  const laserBar = document.getElementById("laser-progress-bar");
+  const transitionOverlay = document.getElementById("clinical-transition-overlay");
+  const transitionTitle = document.getElementById("transition-action-text");
+  const transitionSubtext = document.getElementById("transition-sub-text");
+
+  function triggerLoadingTransition(targetUrl, customTitle, customSub) {
+    if (!laserBar || !transitionOverlay) return;
+
+    // Determine context-aware clinical text
+    let title = customTitle || "Synchronizing Clinical Data...";
+    let sub = customSub || "Interfacing with Oracle 21c Database & MongoDB Core";
+
+    if (!customTitle && targetUrl) {
+      const url = targetUrl.toLowerCase();
+      if (url.includes("/donors")) {
+        title = "Accessing National Donor Registry...";
+        sub = "Retrieving verified NIC profiles, health screening & eligibility dossiers";
+      } else if (url.includes("/camps")) {
+        title = "Loading Blood Donation Camps...";
+        sub = "Fetching mobile drive coordinates, venue venues & donor reviews";
+      } else if (url.includes("/inventory")) {
+        title = "Accessing Cryogenic Blood Matrix...";
+        sub = "Calculating FEFO expiration limits & component storage reserves";
+      } else if (url.includes("/hospitals")) {
+        title = "Loading Clinical Healthcare Portal...";
+        sub = "Retrieving hospital blood orders, STAT demands & dispatch manifests";
+      } else if (url.includes("/logistics")) {
+        title = "Connecting to Sri Lanka Logistics Radar...";
+        sub = "Streaming live GPS courier telemetry & IoT cold-chain sensor status";
+      } else if (url.includes("/database")) {
+        title = "Initializing Oracle 21c Database Studio...";
+        sub = "Opening schema explorer, SQL console & MongoDB document browser";
+      } else if (url.includes("/reports")) {
+        title = "Running Oracle PL/SQL Business Reports...";
+        sub = "Executing analytical cursors & clinical intelligence procedures";
+      } else if (url.includes("/appeals")) {
+        title = "Fetching MongoDB Emergency Appeals...";
+        sub = "Synchronizing live blood requests & community donor pledges";
+      } else if (url.includes("/analytics")) {
+        title = "Initializing AI Clinical Forecaster...";
+        sub = "Predicting burn-rate reserve runway & donor summon matches";
+      }
+    }
+
+    if (transitionTitle) transitionTitle.textContent = title;
+    if (transitionSubtext) transitionSubtext.textContent = sub;
+
+    // Animate Laser Progress Bar
+    laserBar.style.width = "0%";
+    laserBar.classList.add("active");
+    setTimeout(() => { laserBar.style.width = "75%"; }, 10);
+
+    // Show Holographic Modal
+    transitionOverlay.classList.add("active");
+    transitionOverlay.setAttribute("aria-hidden", "false");
+  }
+
+  // Intercept all internal navigation link clicks
+  document.addEventListener("click", function (e) {
+    const link = e.target.closest("a");
+    if (!link) return;
+
+    const href = link.getAttribute("href");
+    if (!href) return;
+
+    // Skip anchor hashes, javascript links, external links, or new tab links
+    if (href.startsWith("#") || href.startsWith("javascript:") || link.target === "_blank") return;
+    if (link.hasAttribute("download")) return;
+
+    // Check if same origin
+    try {
+      const url = new URL(link.href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+      e.preventDefault();
+      playSoftClick();
+      triggerLoadingTransition(url.pathname);
+
+      setTimeout(function () {
+        if (laserBar) laserBar.style.width = "100%";
+        window.location.href = link.href;
+      }, 260);
+    } catch (err) {}
+  });
+
+  // Intercept form submissions for live clinical confirmation
+  document.addEventListener("submit", function (e) {
+    const form = e.target;
+    if (!form) return;
+    playSuccessChord();
+    triggerLoadingTransition(null, "Committing Transaction to Oracle 21c...", "Enforcing ACID compliance, triggers & audit trail logging");
+  });
+
+  // Hide overlay on pageshow (e.g. when back-forward cache returns)
+  window.addEventListener("pageshow", function () {
+    if (transitionOverlay) {
+      transitionOverlay.classList.remove("active");
+      transitionOverlay.setAttribute("aria-hidden", "true");
+    }
+    if (laserBar) {
+      laserBar.style.width = "0%";
+      laserBar.classList.remove("active");
     }
   });
 });

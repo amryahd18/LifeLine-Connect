@@ -14,6 +14,34 @@
   </div>
 </div>
 
+<!-- Real Venue Hero Banner -->
+<div class="camp-hero-banner">
+  <img src="{{ url_for('static', filename='images/venues/camp_' ~ camp.camp_id ~ '.jpg') }}" 
+       onerror="this.src='{{ url_for('static', filename='images/venues/default_camp.jpg') }}'" 
+       alt="{{ camp.camp_name }}" 
+       class="camp-hero-img">
+  <div class="camp-hero-overlay">
+    <div>
+      <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+        <span class="badge" style="background: rgba(14,165,233,0.3); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.5);">
+          📍 {{ camp.venue_address }}, {{ camp.city }}
+        </span>
+        {% if camp.status == 'ACTIVE' %}
+          <span class="badge badge-active">🟢 Active Now</span>
+        {% elif camp.status == 'UPCOMING' %}
+          <span class="badge badge-deferred">⏳ Upcoming Drive</span>
+        {% else %}
+          <span class="badge badge-completed">✓ Drive Completed</span>
+        {% endif %}
+      </div>
+      <h2 style="font-size: 1.8rem; font-weight: 800; color: #fff; text-shadow: 0 3px 12px rgba(0,0,0,0.9);">{{ camp.camp_name }}</h2>
+      <p style="color: #e2e8f0; font-size: 0.92rem; text-shadow: 0 2px 6px rgba(0,0,0,0.9);">
+        National Blood Transfusion Service Sri Lanka Partner Venue &bull; Organized by {{ camp.organizer_name }}
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- Camp Overview Split -->
 <div class="grid-cols-3">
   <!-- Venue & Schedule (Oracle) -->

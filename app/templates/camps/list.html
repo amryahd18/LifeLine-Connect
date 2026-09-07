@@ -34,10 +34,16 @@
 <!-- Camps Grid Cards -->
 <div class="grid-cols-3">
   {% for c in camps %}
-    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">CAMP #{{ c.camp_id }}</span>
+    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
+      <!-- Real Venue Thumbnail -->
+      <div style="position: relative; height: 160px; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/venues/camp_' ~ c.camp_id ~ '.jpg') }}" 
+             onerror="this.src='{{ url_for('static', filename='images/venues/default_camp.jpg') }}'" 
+             alt="{{ c.camp_name }}" 
+             style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+             onmouseover="this.style.transform='scale(1.05)'"
+             onmouseout="this.style.transform='scale(1)'">
+        <div style="position: absolute; top: 10px; right: 10px;">
           {% if c.status == 'ACTIVE' %}
             <span class="badge badge-active">Active Now</span>
           {% elif c.status == 'UPCOMING' %}
@@ -46,10 +52,16 @@
             <span class="badge badge-completed">Completed</span>
           {% endif %}
         </div>
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent 0%, rgba(6,9,17,0.95) 100%); padding: 0.5rem 1rem;">
+          <span style="font-size: 0.75rem; color: #38bdf8; font-family: var(--font-mono); font-weight: 700;">CAMP #{{ c.camp_id }}</span>
+        </div>
+      </div>
 
-        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">
-          <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}" style="color: #fff;">{{ c.camp_name }}</a>
-        </h3>
+      <div style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+        <div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">
+            <a href="{{ url_for('camps.detail', camp_id=c.camp_id) }}" style="color: #fff;">{{ c.camp_name }}</a>
+          </h3>
 
         <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
           <div>🏛️ {{ c.organizer_name }}</div>
