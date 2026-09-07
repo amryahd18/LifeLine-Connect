@@ -180,11 +180,12 @@ Open **http://127.0.0.1:5000** in your browser.
 
 <img width="1887" height="886" alt="image" src="https://github.com/user-attachments/assets/72d0719c-b053-4528-bf3f-e42ca923bad9" />
 
-<img width="1887" height="886" alt="image" src="https://github.com/user-attachments/assets/ea66219c-c209-4e5e-85e4-25ea25490670" />
-
 <img width="1887" height="896" alt="image" src="https://github.com/user-attachments/assets/42626cf0-721b-4f78-a386-f722655d2a5f" />
 
 <img width="1888" height="900" alt="image" src="https://github.com/user-attachments/assets/0204dff8-de71-4574-a7ea-6d6f49f5a89d" />
+
+<img width="1880" height="946" alt="image" src="https://github.com/user-attachments/assets/623ec6e5-48f1-49b1-92be-c1a225f1bedb" />
+
 
 
 
