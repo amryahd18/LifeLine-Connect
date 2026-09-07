@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Dashboard | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Operational Command Center</h1>
+    <p class="page-subtitle">Real-time hybrid telemetry from Oracle 21c (Relational) &amp; MongoDB (Unstructured)</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('inventory.donate') }}" class="btn btn-primary">+ Record Donation</a>
+    <a href="{{ url_for('appeals.new_appeal') }}" class="btn btn-outline" style="border-color: var(--crimson-500); color: #fda4af;">🚨 Broadcast Appeal</a>
+  </div>
+</div>
+
+<!-- Telemetry Metric Cards -->
+<div class="grid-cols-4">
+  <div class="glass-card stat-card">
+    <div class="stat-icon crimson">🩸</div>
+    <div>
+      <div class="stat-label">Available Blood Units</div>
+      <div class="stat-value">{{ stats.available_units }}</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon emerald">👥</div>
+    <div>
+      <div class="stat-label">Registered Donors</div>
+      <div class="stat-value">{{ stats.total_donors }}</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon sky">⛺</div>
+    <div>
+      <div class="stat-label">Active Field Camps</div>
+      <div class="stat-value">{{ stats.active_camps }}</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon amber">🏥</div>
+    <div>
+      <div class="stat-label">Pending Hospital Requests</div>
+      <div class="stat-value">{{ stats.pending_requests }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Blood Transfusion Compatibility Calculator Widget -->
+<div id="interactive-compat-matrix" class="compat-widget">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      <h3 style="font-size: 1.25rem; display: flex; align-items: center; gap: 0.6rem;">
+        <span style="font-size: 1.4rem;">🧬</span> Interactive Transfusion Compatibility Matcher
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+        Select a donor blood group to calculate clinical cross-match compatibility and highlight matching emergency reserve units.
+      </p>
+    </div>
+    <div id="compat-note" class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af; border: 1px solid rgba(225,29,72,0.3); font-size: 0.8rem; padding: 0.35rem 0.85rem;">
+      Universal Donor Selected
+    </div>
+  </div>
+
+  <!-- Blood Group Selector Buttons -->
+  <div class="compat-tabs">
+    <button class="compat-btn active" data-group="O-">O-</button>
+    <button class="compat-btn" data-group="O+">O+</button>
+    <button class="compat-btn" data-group="A-">A-</button>
+    <button class="compat-btn" data-group="A+">A+</button>
+    <button class="compat-btn" data-group="B-">B-</button>
+    <button class="compat-btn" data-group="B+">B+</button>
+    <button class="compat-btn" data-group="AB-">AB-</button>
+    <button class="compat-btn" data-group="AB+">AB+</button>
+  </div>
+
+  <!-- Compatibility Results Split -->
+  <div class="compat-results">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.4rem;">
+        <span style="color: #34d399; font-weight: 700;">➔ CAN SAFELY DONATE TO:</span>
+      </div>
+      <div id="compat-give-pills" class="compat-pill-group">
+        <!-- Rendered by main.js -->
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.4rem;">
+        <span style="color: #38bdf8; font-weight: 700;">⬅ CAN SAFELY RECEIVE FROM:</span>
+      </div>
+      <div id="compat-receive-pills" class="compat-pill-group">
+        <!-- Rendered by main.js -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Split: Blood Group Stock Matrix + Emergency Appeals -->
+<div class="grid-cols-2">
+  <!-- Blood Group Stock Matrix -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.15rem;">Live Inventory by Blood Group (Oracle DB)</h3>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Click any card to cross-check compatibility</span>
+      </div>
+      <a href="{{ url_for('inventory.expiring') }}" class="btn btn-sm btn-outline" style="color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">
+        ⚠️ Check Expiring Units
+      </a>
+    </div>
+
+    <div class="blood-matrix">
+      {% for g in groups %}
+        <div class="blood-badge-card" title="Click to inspect {{ g.blood_group }} compatibility">
+          <div class="blood-type-symbol">{{ g.blood_group }}</div>
+          <div class="blood-count">{{ g.available_units }} <span style="font-size:0.75rem; color:var(--text-secondary);">units</span></div>
+          <div class="blood-comp-tags">
+            <span>RBC: {{ g.rbc }}</span> | <span>Plt: {{ g.platelets }}</span> | <span>WB: {{ g.whole_blood }}</span>
+          </div>
+          <!-- Liquid Level Fill Bar -->
+          <div class="liquid-bar-container">
+            {% set pct = (g.available_units / 10.0 * 100) if (g.available_units <= 10) else 100 %}
+            <div class="liquid-fill" style="width: {{ pct }}%;"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Emergency Appeals Board (MongoDB) -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.15rem;">🚨 Critical Appeals Board (MongoDB)</h3>
+      <a href="{{ url_for('appeals.index') }}" class="btn btn-sm btn-outline">View All ({{ stats.emergency_appeals }})</a>
+    </div>
+
+    {% if appeals %}
+      <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+        {% for a in appeals %}
+          <div style="background: rgba(13, 21, 39, 0.85); border-left: 4px solid var(--crimson-500); border-radius: 8px; padding: 0.9rem 1.1rem; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <span class="badge badge-critical">{{ a.urgency }}</span>
+              <strong style="color: #fff; font-size: 1.05rem;">Group {{ a.blood_group }} ({{ a.units_required }} Units)</strong>
+            </div>
+            <div style="font-size: 0.85rem; color: #e2e8f0;">{{ a.patient_condition }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; display: flex; justify-content: space-between;">
+              <span>🏥 {{ a.hospital_name }}, {{ a.city }}</span>
+              <span>💬 {{ a.community_qa|length }} Discussion Entries</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted);">No open emergency appeals at this time.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Secondary Split: Top Rated Camps (Mongo Aggregation) + Recent Donors -->
+<div class="grid-cols-2">
+  <!-- Top Rated Camps -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.15rem;">⭐ Top Rated Camps (MongoDB Aggregation Pipeline)</h3>
+      <a href="{{ url_for('camps.top_rated') }}" class="btn btn-sm btn-outline">Leaderboard</a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      {% for c in top_camps %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-subtle); transition: transform 0.2s ease;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+          <div>
+            <strong style="color: #fff;">Camp #{{ c.camp_id }}</strong>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+              Hygiene: {{ c.avg_hygiene_safety }}/5.0 | Staff: {{ c.avg_staff_friendliness }}/5.0
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">★ {{ c.avg_overall_score }}/5.0</span>
+            <div style="font-size: 0.75rem; color: #34d399;">{{ c.recommendation_pct }}% Recommend</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Registered Donors -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h3 style="font-size: 1.15rem;">👥 Registered Donors (Oracle Relational)</h3>
+        <span style="font-size: 0.75rem; color: var(--text-muted);"><span id="donor-count-badge">{{ recent_donors|length }}</span> active records</span>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <input type="text" data-table-filter="#dashboard-donors-table" data-count-target="donor-count-badge" placeholder="Filter donors..." class="form-control" style="width: 150px; padding: 0.25rem 0.6rem; font-size: 0.8rem;">
+        <a href="{{ url_for('donors.index') }}" class="btn btn-sm btn-outline">Directory</a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table id="dashboard-donors-table" class="custom-table">
+        <thead>
+          <tr>
+            <th>Donor</th>
+            <th>Blood Group</th>
+            <th>City</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in recent_donors %}
+            <tr>
+              <td>
+                <a href="{{ url_for('donors.profile', donor_id=d.donor_id) }}">
+                  <strong>{{ d.first_name }} {{ d.last_name }}</strong>
+                </a>
+              </td>
+              <td><span class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af;">{{ d.blood_group }}</span></td>
+              <td>{{ d.city }}</td>
+              <td>
+                {% if d.eligibility_status == 'ELIGIBLE' %}
+                  <span class="badge badge-eligible">Eligible</span>
+                {% elif d.eligibility_status == 'TEMPORARILY_DEFERRED' %}
+                  <span class="badge badge-deferred">Deferred</span>
+                {% else %}
+                  <span class="badge badge-ineligible">Ineligible</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

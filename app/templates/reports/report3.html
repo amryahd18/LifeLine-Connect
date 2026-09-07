@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Report 3: Donor Eligibility & History | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📊 Report 3: Individual Donor Eligibility &amp; History Summary</h1>
+    <p class="page-subtitle">Oracle PL/SQL Package: <code>PKG_LIFELINE_REPORTS.sp_report_donor_history(:donor_id)</code></p>
+  </div>
+  <a href="{{ url_for('reports.index') }}" class="btn btn-outline">&larr; Back to Reports</a>
+</div>
+
+<!-- Donor Selector Dropdown -->
+<div class="glass-card" style="margin-bottom: 2rem; padding: 1.2rem;">
+  <form method="GET" action="{{ url_for('reports.report3') }}" style="display: flex; gap: 1rem; align-items: flex-end;">
+    <div style="flex: 1;">
+      <label class="form-label">Select Donor Profile to Analyze</label>
+      <select name="donor_id" class="form-select" onchange="this.form.submit()">
+        {% for d in donors %}
+          <option value="{{ d.donor_id }}" {% if selected_donor_id == d.donor_id %}selected{% endif %}>
+            #{{ d.donor_id }} - {{ d.first_name }} {{ d.last_name }} ({{ d.blood_group }}) - {{ d.city }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Dossier</button>
+  </form>
+</div>
+
+{% if summary %}
+<div class="grid-cols-2" style="margin-bottom: 2rem;">
+  <!-- Donor Summary Card -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="font-size: 1.2rem;">{{ summary.full_name }}</h3>
+      <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 1rem;">
+        {{ summary.blood_group }} ({{ summary.rh_factor }})
+      </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; font-size: 0.9rem;">
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">EMAIL</span>{{ summary.email }}</div>
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">PHONE</span>{{ summary.phone }}</div>
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">BODY WEIGHT</span>{{ summary.weight_kg }} kg</div>
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">HEMOGLOBIN</span>{{ summary.hemoglobin_level }} g/dL</div>
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">LAST DONATION</span>{{ summary.last_donation_date|format_date }}</div>
+      <div><span style="color:var(--text-muted); display:block; font-size:0.75rem;">NEXT ELIGIBLE</span><strong style="color:#38bdf8;">{{ summary.next_eligible_date|format_date }}</strong></div>
+    </div>
+  </div>
+
+  <!-- Eligibility Status Gauge -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">CURRENT ELIGIBILITY CLEARANCE</div>
+      <div style="font-size: 1.5rem; font-weight: 800; color: {% if summary.eligibility_status == 'ELIGIBLE' %}#34d399{% else %}#fbbf24{% endif %};">
+        {{ summary.eligibility_status }}
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.4rem;">
+        {% if summary.days_until_eligible > 0 %}
+          Donor is recovering from previous donation. Eligible in <strong>{{ summary.days_until_eligible }} days</strong>.
+        {% else %}
+          Donor meets all health metrics and donation intervals. Ready for intake.
+        {% endif %}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 1rem;">
+      <div style="flex: 1; text-align: center;">
+        <div style="font-size: 0.75rem; color: var(--text-muted);">LIFETIME DONATIONS</div>
+        <div style="font-size: 1.7rem; font-weight: 800; color: #fff;">{{ summary.lifetime_donations }}</div>
+      </div>
+      <div style="flex: 1; text-align: center;">
+        <div style="font-size: 0.75rem; color: var(--text-muted);">UNITS CONTRIBUTED</div>
+        <div style="font-size: 1.7rem; font-weight: 800; color: var(--crimson-500);">{{ summary.lifetime_units_contributed }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Itemized History Table -->
+<div class="glass-card">
+  <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Itemized Donation History (PL/SQL Ref Cursor)</h3>
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Donation ID</th>
+          <th>Donation Date</th>
+          <th>Camp / Venue</th>
+          <th>Units</th>
+          <th>Blood Pressure</th>
+          <th>Pulse Rate</th>
+          <th>Hemoglobin Reading</th>
+          <th>Screening Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if history %}
+          {% for h in history %}
+            <tr>
+              <td><strong>#{{ h.donation_id }}</strong></td>
+              <td>{{ h.donation_date|format_date }}</td>
+              <td>{{ h.venue_name }}</td>
+              <td><strong style="color: var(--crimson-500);">{{ h.units_donated }}</strong></td>
+              <td>{{ h.blood_pressure }} mmHg</td>
+              <td>{{ h.pulse_rate }} bpm</td>
+              <td>{{ h.hemoglobin_reading }} g/dL</td>
+              <td><span class="badge badge-eligible">{{ h.screening_status }}</span></td>
+              <td style="font-size: 0.82rem; color: var(--text-muted);">{{ h.notes }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No donations recorded yet.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

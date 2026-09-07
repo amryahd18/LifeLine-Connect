@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Geospatial Logistics & IoT Cold-Chain Radar | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Geospatial Logistics &amp; IoT Cold-Chain Radar</h1>
+    <p class="page-subtitle">Real-time GPS supply-chain tracking, emergency corridors, and cryogenic sensor telemetry</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <button id="tab-btn-map" class="btn btn-primary" onclick="switchView('map')">🗺️ Geospatial Radar Map</button>
+    <button id="tab-btn-coldchain" class="btn btn-outline" onclick="switchView('coldchain')">❄️ IoT Cold-Chain Telemetry</button>
+  </div>
+</div>
+
+<!-- =========================================================================
+     VIEW 1: GEOSPATIAL LOGISTICS MAP (LEAFLET.JS)
+     ========================================================================= -->
+<div id="view-map" class="glass-card" style="padding: 1rem; margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-weight: 700; font-size: 1.1rem; color: #fff;">🛰️ Regional Logistics Telemetry Map</span>
+      <span class="badge" style="background: rgba(16,185,129,0.15); color: #34d399;">GPS Feeds Live</span>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <!-- Map Style Switcher -->
+      <div style="display: flex; align-items: center; gap: 0.35rem;">
+        <span style="font-size: 0.78rem; color: var(--text-secondary);">Style:</span>
+        <select id="map-style-select" onchange="changeMapStyle(this.value)" class="form-select" style="width: 170px; padding: 0.25rem 0.5rem; font-size: 0.78rem;">
+          <option value="dark">🌑 Dark Tactical (Esri)</option>
+          <option value="osm">🗺️ OpenStreetMap (OSM)</option>
+          <option value="sat">🛰️ Satellite Recon</option>
+        </select>
+      </div>
+
+      <!-- Layer Toggle Pills -->
+      <div style="display: flex; gap: 0.5rem; font-size: 0.8rem;">
+        <label style="display: flex; align-items: center; gap: 0.3rem; color: #fda4af; cursor: pointer;">
+          <input type="checkbox" id="chk-hospitals" checked onchange="toggleLayer('hospitals')"> 🏥 Hospitals (4)
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.3rem; color: #38bdf8; cursor: pointer;">
+          <input type="checkbox" id="chk-camps" checked onchange="toggleLayer('camps')"> ⛺ Mobile Camps (3)
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.3rem; color: #fbbf24; cursor: pointer;">
+          <input type="checkbox" id="chk-couriers" checked onchange="toggleLayer('couriers')"> 🚚 Couriers (3)
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Canvas -->
+  <div id="logistics-map" style="height: 540px; width: 100%; border-radius: 12px; border: 1px solid var(--border-subtle); z-index: 10;"></div>
+
+  <!-- Active Couriers Live Ticker -->
+  <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.8rem;">
+    <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <strong style="color: #fff;">🚚 NBTS Mobile Van (WP-CAA-4491)</strong>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">Driver: Sunil Shantha • Bay Temp: <strong style="color:#34d399;">3.8°C</strong></div>
+      </div>
+      <span class="badge badge-critical" style="font-size: 0.7rem;">URGENT DISPATCH</span>
+    </div>
+
+    <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <strong style="color: #fff;">🚑 1990 Suwa Seriya Emergency Transporter</strong>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">Driver: Nuwan Pradeep • Bay Temp: <strong style="color:#38bdf8;">4.1°C</strong></div>
+      </div>
+      <span class="badge badge-active" style="font-size: 0.7rem;">COLOMBO SOUTH RUN</span>
+    </div>
+
+    <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <strong style="color: #fff;">🛸 LifeLine Lanka BioDrone D-01</strong>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">BioFlight Drone • Bay Temp: <strong style="color:#fbbf24;">21.8°C (Plt)</strong></div>
+      </div>
+      <span class="badge badge-eligible" style="font-size: 0.7rem;">AIR TRANSIT (LRH)</span>
+    </div>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">BioFlight Drone • Bay Temp: <strong style="color:#fbbf24;">21.5°C (Plt)</strong></div>
+      </div>
+      <span class="badge badge-eligible" style="font-size: 0.7rem;">AIR TRANSIT</span>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     VIEW 2: IOT COLD-CHAIN TEMPERATURE TELEMETRY
+     ========================================================================= -->
+<div id="view-coldchain" class="glass-card" style="display: none; margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h3 style="font-size: 1.25rem;">❄️ IoT Cryogenic Cold-Chain Storage Bays</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">Real-time wireless sensors streaming at 3-second intervals from LifeLine Central Blood Storage Bank</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <button id="btn-breach-sim" class="btn btn-sm btn-outline" style="border-color: #ef4444; color: #fca5a5;" onclick="toggleBreachSimulation()">
+        ⚠️ Simulate Bay Temp Breach
+      </button>
+      <span class="badge badge-eligible" id="coldchain-live-badge">Sensors: Nominal</span>
+    </div>
+  </div>
+
+  <!-- Cold Bays Live Grid -->
+  <div class="grid-cols-4" id="cold-bays-grid">
+    <!-- Populated via client-side telemetry poll -->
+    <div class="glass-card stat-card" style="flex-direction: column; align-items: flex-start;">
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af;">Bay WB-01</span>
+        <span class="badge badge-eligible">NOMINAL</span>
+      </div>
+      <div style="margin-top: 0.75rem;">
+        <div style="font-size: 0.8rem; color: var(--text-secondary);">Whole Blood Refrigerator</div>
+        <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading); color: #34d399;">3.8 °C</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Safe Range: 2.0°C – 6.0°C</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Oscillating Telemetry Waveform -->
+  <div style="background: rgba(8, 14, 26, 0.9); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.25rem; margin-top: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+      <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Sensor Signal Spectrum (Whole Blood / RBC / Platelets / Plasma)</span>
+      <span style="font-size: 0.75rem; color: #34d399;">Telemetry Polling: Active (3000ms)</span>
+    </div>
+    <svg style="width: 100%; height: 70px;" viewBox="0 0 800 70">
+      <path d="M 0,35 Q 50,15 100,35 T 200,35 T 300,35 T 400,35 T 500,35 T 600,35 T 700,35 T 800,35" fill="none" stroke="#10b981" stroke-width="2" opacity="0.8"/>
+      <path d="M 0,35 Q 50,48 100,35 T 200,35 T 300,35 T 400,35 T 500,35 T 600,35 T 700,35 T 800,35" fill="none" stroke="#0ea5e9" stroke-width="1.5" opacity="0.6"/>
+      <path d="M 0,35 Q 50,22 100,35 T 200,35 T 300,35 T 400,35 T 500,35 T 600,35 T 700,35 T 800,35" fill="none" stroke="#e11d48" stroke-width="2" opacity="0.7"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+let map = null;
+let markerLayers = {
+  hospitals: [],
+  camps: [],
+  couriers: []
+};
+let isBreachSimActive = false;
+
+function switchView(viewName) {
+  const mapView = document.getElementById("view-map");
+  const coldView = document.getElementById("view-coldchain");
+  const mapBtn = document.getElementById("tab-btn-map");
+  const coldBtn = document.getElementById("tab-btn-coldchain");
+
+  if (viewName === "map") {
+    mapView.style.display = "block";
+    coldView.style.display = "none";
+    mapBtn.className = "btn btn-primary";
+    coldBtn.className = "btn btn-outline";
+    if (map) setTimeout(() => map.invalidateSize(), 200);
+  } else {
+    mapView.style.display = "none";
+    coldView.style.display = "block";
+    coldBtn.className = "btn btn-primary";
+    mapBtn.className = "btn btn-outline";
+    pollColdChainTelemetry();
+  }
+}
+
+let tileLayers = {};
+let activeTileGroup = null;
+
+function initLogisticsMap() {
+  if (map) return;
+
+  // Center around Sri Lanka (Colombo Health District & National Blood Centre Corridor)
+  map = L.map('logistics-map').setView([6.9147, 79.8778], 13);
+
+  // 100% Free, Keyless, Unrestricted Tile Layers
+  const esriDarkBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom: 16
+  });
+
+  const esriDarkRef = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '',
+    maxZoom: 16
+  });
+
+  tileLayers.dark = L.layerGroup([esriDarkBase, esriDarkRef]);
+
+  tileLayers.osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  });
+
+  tileLayers.sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+    maxZoom: 18
+  });
+
+  // Set default to Dark Tactical
+  activeTileGroup = tileLayers.dark;
+  activeTileGroup.addTo(map);
+
+  // Fetch coordinates
+  fetch('/logistics/api/locations')
+    .then(res => res.json())
+    .then(data => {
+      // Central Storage Hub Marker
+      if (data.storage_hub) {
+        const hubIcon = L.divIcon({
+          className: 'custom-hub-icon',
+          html: '<div style="background: #e11d48; border: 3px solid #fff; width: 34px; height: 34px; border-radius: 50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 20px #e11d48; font-size:16px;">🩸</div>',
+          iconSize: [34, 34]
+        });
+        L.marker([data.storage_hub.lat, data.storage_hub.lng], { icon: hubIcon })
+          .addTo(map)
+          .bindPopup(`<strong style="color:#e11d48; font-size:1.1rem;">${data.storage_hub.name}</strong><br>${data.storage_hub.address}<br><span style="color:#34d399;">Central Cryogenic Blood Vault</span>`);
+      }
+
+      // Hospital Markers
+      data.hospitals.forEach(h => {
+        const hospIcon = L.divIcon({
+          className: 'custom-hosp-icon',
+          html: '<div style="background: #be123c; border: 2px solid #fda4af; width: 28px; height: 28px; border-radius: 8px; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 14px rgba(225,29,72,0.6); font-size:14px;">🏥</div>',
+          iconSize: [28, 28]
+        });
+        const m = L.marker([h.lat, h.lng], { icon: hospIcon }).addTo(map)
+          .bindPopup(`<strong style="font-size:1rem;">${h.name}</strong><br>Type: ${h.type}<br>Urgency Status: <strong style="color:#f43f5e;">${h.urgency}</strong>`);
+        markerLayers.hospitals.push(m);
+      });
+
+      // Camp Markers
+      data.camps.forEach(c => {
+        const campIcon = L.divIcon({
+          className: 'custom-camp-icon',
+          html: '<div style="background: #0284c7; border: 2px solid #7dd3fc; width: 28px; height: 28px; border-radius: 8px; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 14px rgba(14,165,233,0.6); font-size:14px;">⛺</div>',
+          iconSize: [28, 28]
+        });
+        const m = L.marker([c.lat, c.lng], { icon: campIcon }).addTo(map)
+          .bindPopup(`<strong style="font-size:1rem;">${c.name}</strong><br>Status: <span style="color:#38bdf8;">${c.status}</span><br>Target Collection: ${c.target} Units`);
+        markerLayers.camps.push(m);
+      });
+
+      // Couriers
+      data.couriers.forEach(van => {
+        const vanIcon = L.divIcon({
+          className: 'custom-van-icon',
+          html: `<div style="background: #d97706; border: 2px solid #fef08a; width: 28px; height: 28px; border-radius: 50%; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 14px rgba(245,158,11,0.6); font-size:14px;">${van.id.startsWith('DRONE') ? '🛸' : '🚚'}</div>`,
+          iconSize: [28, 28]
+        });
+        const m = L.marker([van.lat, van.lng], { icon: vanIcon }).addTo(map)
+          .bindPopup(`<strong>${van.name}</strong><br>Cargo Bay: <strong style="color:#34d399;">${van.temp}</strong><br>Heading to: ${van.destination}`);
+        markerLayers.couriers.push(m);
+      });
+    });
+}
+
+function changeMapStyle(styleKey) {
+  if (!map || !tileLayers[styleKey]) return;
+  if (activeTileGroup) {
+    map.removeLayer(activeTileGroup);
+  }
+  activeTileGroup = tileLayers[styleKey];
+  activeTileGroup.addTo(map);
+}
+
+function toggleLayer(type) {
+  const isChecked = document.getElementById(`chk-${type}`).checked;
+  markerLayers[type].forEach(m => {
+    if (isChecked) map.addLayer(m);
+    else map.removeLayer(m);
+  });
+}
+
+function pollColdChainTelemetry() {
+  fetch('/logistics/api/telemetry')
+    .then(res => res.json())
+    .then(data => {
+      const grid = document.getElementById("cold-bays-grid");
+      if (!grid) return;
+
+      let html = "";
+      data.bays.forEach((bay, idx) => {
+        let temp = bay.temperature;
+        let isBreach = bay.status !== "NOMINAL";
+        
+        if (isBreachSimActive && idx === 0) {
+          temp = 8.4; // Simulated breach above 6.0°C!
+          isBreach = true;
+        }
+
+        const color = isBreach ? "#ef4444" : "#34d399";
+        const badge = isBreach 
+          ? '<span class="badge badge-critical" style="animation: pulse-red 1s infinite;">CRITICAL BREACH</span>' 
+          : '<span class="badge badge-eligible">NOMINAL</span>';
+
+        html += `
+          <div class="glass-card stat-card" style="flex-direction: column; align-items: flex-start; border-color: ${isBreach ? 'rgba(239,68,68,0.6)' : 'var(--border-subtle)'};">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af;">${bay.bay_id}</span>
+              ${badge}
+            </div>
+            <div style="margin-top: 0.75rem;">
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">${bay.name}</div>
+              <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-heading); color: ${color};">
+                ${temp} ${bay.unit}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                Safe Range: ${bay.safe_min}°C – ${bay.safe_max}°C
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.4rem;">
+                Seal: ${bay.door_seal} • Power: ${bay.power_grid}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+    });
+}
+
+function toggleBreachSimulation() {
+  isBreachSimActive = !isBreachSimActive;
+  const btn = document.getElementById("btn-breach-sim");
+  const badge = document.getElementById("coldchain-live-badge");
+
+  if (isBreachSimActive) {
+    btn.innerText = "🛑 Stop Simulation";
+    btn.style.background = "#ef4444";
+    btn.style.color = "#fff";
+    badge.className = "badge badge-critical";
+    badge.innerText = "⚠️ BREACH ALARM ACTIVE";
+  } else {
+    btn.innerText = "⚠️ Simulate Bay Temp Breach";
+    btn.style.background = "transparent";
+    btn.style.color = "#fca5a5";
+    badge.className = "badge badge-eligible";
+    badge.innerText = "Sensors: Nominal";
+  }
+  pollColdChainTelemetry();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  initLogisticsMap();
+  // Poll telemetry every 3.5 seconds
+  setInterval(pollColdChainTelemetry, 3500);
+});
+</script>
+{% endblock %}

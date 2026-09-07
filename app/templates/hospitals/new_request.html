@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Create Blood Requisition | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Create Hospital Blood Requisition</h1>
+    <p class="page-subtitle">Submit clinical blood orders for surgery prep, trauma triage, or scheduled transfusions</p>
+  </div>
+  <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">&larr; Back to Requests</a>
+</div>
+
+<div class="glass-card" style="max-width: 750px; margin: 0 auto;">
+  <form method="POST" action="{{ url_for('hospitals.new_request') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Requesting Hospital *</label>
+        <select name="hospital_id" class="form-select" required>
+          <option value="">-- Choose Hospital --</option>
+          {% for h in hospitals %}
+            <option value="{{ h.hospital_id }}">
+              {{ h.hospital_name }} ({{ h.category }}) - {{ h.city }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Urgency Level *</label>
+        <select name="urgency_level" class="form-select" required>
+          <option value="CRITICAL_EMERGENCY">🚨 Critical Emergency (Stat / Immediate)</option>
+          <option value="URGENT">⚠️ Urgent (Within 24 Hours)</option>
+          <option value="NORMAL" selected>Normal (Scheduled / 48-72 Hours)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Target Blood Group *</label>
+        <select name="blood_group" class="form-select" required>
+          {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+            <option value="{{ bg }}">{{ bg }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Component Type *</label>
+        <select name="component_type" class="form-select" required>
+          <option value="WHOLE_BLOOD">Whole Blood</option>
+          <option value="RBC" selected>Packed Red Blood Cells (RBC)</option>
+          <option value="PLATELETS">Platelets Concentrate</option>
+          <option value="PLASMA">Fresh Frozen Plasma (FFP)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Units Demanded *</label>
+        <input type="number" name="units_requested" class="form-control" required value="2" min="1" max="50">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Required By Date *</label>
+        <input type="date" name="required_by_date" class="form-control" required value="2026-09-06">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Clinical Indication &amp; Patient Case</label>
+      <textarea name="notes" rows="3" class="form-control" placeholder="Trauma resuscitation, scheduled CABG surgery, severe anemia..."></textarea>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+      <a href="{{ url_for('hospitals.requests') }}" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary">Submit Blood Requisition</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

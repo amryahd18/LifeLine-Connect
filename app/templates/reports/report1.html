@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Report 1: Camp Collections by Blood Group | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📊 Report 1: Total Blood Units Collected Across Camps</h1>
+    <p class="page-subtitle">Oracle PL/SQL Package: <code>PKG_LIFELINE_REPORTS.fn_report_camps_collections</code></p>
+  </div>
+  <a href="{{ url_for('reports.index') }}" class="btn btn-outline">&larr; Back to Reports</a>
+</div>
+
+<!-- Summary Metrics -->
+<div class="grid-cols-2" style="margin-bottom: 2rem;">
+  <div class="glass-card stat-card">
+    <div class="stat-icon crimson">🩸</div>
+    <div>
+      <div class="stat-label">Total Units Collected Across All Camps</div>
+      <div class="stat-value">{{ total_units }} Units</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon sky">📋</div>
+    <div>
+      <div class="stat-label">Total Completed Donation Screenings</div>
+      <div class="stat-value">{{ total_donations }} Donors</div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Table -->
+<div class="glass-card">
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Camp / Venue Name</th>
+          <th>Location</th>
+          <th>Drive Status</th>
+          <th>Blood Group</th>
+          <th>Units Collected</th>
+          <th>Distinct Donors</th>
+          <th>Target Units</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if data %}
+          {% for r in data %}
+            <tr>
+              <td><strong style="color: #fff;">{{ r.camp_name }}</strong></td>
+              <td>{{ r.venue_city }}</td>
+              <td>
+                <span class="badge {% if r.camp_status == 'ACTIVE' %}badge-active{% elif r.camp_status == 'COMPLETED' %}badge-completed{% else %}badge-deferred{% endif %}">
+                  {{ r.camp_status }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 0.9rem;">
+                  {{ r.blood_group }}
+                </span>
+              </td>
+              <td><strong style="color: var(--crimson-500); font-size: 1.05rem;">{{ r.total_units_collected }}</strong></td>
+              <td>{{ r.distinct_donors }}</td>
+              <td style="color: var(--text-secondary);">{{ r.camp_target_units }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No collection records available.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

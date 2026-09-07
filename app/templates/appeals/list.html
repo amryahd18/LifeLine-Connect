@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Blood Appeals | MongoDB Community Hub{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🚨 Emergency Blood Appeals &amp; Community Q&amp;A</h1>
+    <p class="page-subtitle">High-priority crowd appeals and community inquiry threads stored in MongoDB 8.0</p>
+  </div>
+  <a href="{{ url_for('appeals.new_appeal') }}" class="btn btn-primary" style="background: linear-gradient(135deg, var(--crimson-500), #9f1239);">
+    + Broadcast Emergency Appeal
+  </a>
+</div>
+
+<!-- Search & Filtering Bar (MongoDB Text & Regex Matching) -->
+<div class="glass-card" style="margin-bottom: 2rem; padding: 1.2rem;">
+  <form method="GET" action="{{ url_for('appeals.index') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 220px;">
+      <label class="form-label">Search Keywords (e.g. trauma, accident, hemorrhage, oncology)</label>
+      <input type="text" name="keyword" class="form-control" placeholder="Search condition, hospital, Q&A message..." value="{{ keyword }}">
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label">Blood Group</label>
+      <select name="blood_group" class="form-select">
+        <option value="">All Blood Groups</option>
+        {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+          <option value="{{ bg }}" {% if selected_bg == bg %}selected{% endif %}>{{ bg }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="OPEN" {% if selected_status == 'OPEN' %}selected{% endif %}>Active / Open</option>
+        <option value="FULFILLED" {% if selected_status == 'FULFILLED' %}selected{% endif %}>Fulfilled</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-outline" style="height: 40px;">Search Appeals</button>
+      <a href="{{ url_for('appeals.index') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Appeals List Cards -->
+<div style="display: flex; flex-direction: column; gap: 1.5rem;">
+  {% if appeals %}
+    {% for a in appeals %}
+      <div class="glass-card" style="border-left: 5px solid {% if a.urgency == 'CRITICAL' %}var(--crimson-500){% elif a.urgency == 'URGENT' %}#f59e0b{% else %}#38bdf8{% endif %};">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <span class="badge {% if a.urgency == 'CRITICAL' %}badge-critical{% elif a.urgency == 'URGENT' %}badge-deferred{% else %}badge-active{% endif %}" style="margin-right: 0.5rem;">
+              {{ a.urgency }}
+            </span>
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-family: monospace;">{{ a.appeal_id }}</span>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 1.15rem; font-weight: 800; padding: 0.35rem 0.8rem;">
+              {{ a.blood_group }}
+            </span>
+            <span style="color: #fff; font-weight: 700; margin-left: 0.5rem;">{{ a.units_required }} Units Needed</span>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 0.4rem;">
+          🏥 {{ a.hospital_name }} &bull; <span style="font-size: 1rem; color: var(--text-secondary); font-weight: 400;">{{ a.city }}</span>
+        </h3>
+
+        <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 0.75rem; line-height: 1.5;">
+          {{ a.patient_condition }}
+        </p>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <span>📞 Hotline: <strong style="color: #fff;">{{ a.contact_phone }}</strong></span>
+          <span>📡 Broadcast Channels: {{ a.broadcast_channels|join(', ') }}</span>
+          <span>📅 Posted: {{ a.created_at|format_date }}</span>
+        </div>
+
+        <!-- Community Q&A Subdocuments Section -->
+        <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1rem; margin-top: 0.5rem;">
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+            <span>💬 Community Inquiry &amp; Volunteer Thread ({{ a.community_qa|length }})</span>
+          </h4>
+
+          {% if a.community_qa %}
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+              {% for qa in a.community_qa %}
+                <div style="background: rgba(255, 255, 255, 0.02); border-left: 3px solid #38bdf8; border-radius: 6px; padding: 0.65rem 0.9rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.2rem;">
+                    <strong style="color: #fff;">{{ qa.user_name }} <span style="color: var(--text-muted); font-weight: 400;">({{ qa.user_type }})</span></strong>
+                    <span style="color: var(--text-muted);">{{ qa.timestamp|format_date }}</span>
+                  </div>
+                  <div style="font-size: 0.85rem; color: #e2e8f0;">Q: {{ qa.message }}</div>
+                  {% if qa.reply %}
+                    <div style="font-size: 0.82rem; color: #34d399; margin-top: 0.35rem; padding-left: 0.75rem; border-left: 2px solid #10b981;">
+                      <strong>Coordinator Reply:</strong> {{ qa.reply }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">No questions posted yet for this appeal.</p>
+          {% endif %}
+
+          <!-- Post Quick Question Form -->
+          <form method="POST" action="{{ url_for('appeals.post_qa', appeal_id=a.appeal_id) }}" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <input type="text" name="user_name" class="form-control" style="flex: 1; min-width: 140px;" placeholder="Your Name" required>
+            <input type="text" name="message" class="form-control" style="flex: 3; min-width: 240px;" placeholder="Ask eligibility, donation slot, or pledge units..." required>
+            <button type="submit" class="btn btn-sm btn-outline">Post Comment</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="glass-card" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+      No emergency appeals matched your search query.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

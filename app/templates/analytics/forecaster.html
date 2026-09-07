@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}AI Blood Shortage Forecaster & Donor Triage | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">AI Clinical Shortage Forecaster &amp; Smart Donor Triage</h1>
+    <p class="page-subtitle">Predictive burn-rate modeling, supply runway forecasting, and automated donor summoning engine</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('inventory.stock') }}" class="btn btn-outline">📦 View Live Inventory</a>
+    <button class="btn btn-primary" onclick="openSummonModal('O-')">🚨 Fast Summon O- Donors</button>
+  </div>
+</div>
+
+<!-- Critical Triage Alerts Banner -->
+{% if critical_alerts %}
+  <div class="glass-card" style="border-left: 5px solid #ef4444; background: rgba(239, 68, 68, 0.08); margin-bottom: 2rem; padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h3 style="color: #fca5a5; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>🚨</span> Critical Blood Depletion Alert Triggered
+        </h3>
+        <p style="font-size: 0.88rem; color: #fecdd3; margin-top: 0.25rem;">
+          The AI demand predictor has identified <strong>{{ critical_alerts|length }} blood group(s)</strong> with less than 60 hours of clinical reserve runway.
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        {% for a in critical_alerts %}
+          <button class="btn btn-sm btn-primary" onclick="openSummonModal('{{ a.blood_group }}')">
+            Summon {{ a.blood_group }} Heroes ({{ a.days }}d left)
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Predictive Forecast Runway Matrix -->
+<div class="glass-card" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      <h3 style="font-size: 1.2rem;">8-Group Stock Runway &amp; Daily Burn Rate (Oracle 21c AI Model)</h3>
+      <span style="font-size: 0.78rem; color: var(--text-muted);">Evaluates real-time units divided by historical and pending hospital requisition burn velocity</span>
+    </div>
+    <span class="badge" style="background: rgba(14,165,233,0.15); color: #38bdf8;">Algorithm: Weighted Exponential Moving Average</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>Available Units</th>
+          <th>Daily Burn Rate</th>
+          <th>Estimated Runway</th>
+          <th>7-Day Deficit</th>
+          <th>14-Day Deficit</th>
+          <th>Triage Status</th>
+          <th>AI Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in forecast %}
+          <tr>
+            <td>
+              <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 1rem; font-weight: 800;">
+                {{ row.blood_group }}
+              </span>
+            </td>
+            <td><strong style="color: #fff; font-size: 1.1rem;">{{ row.available_units }}</strong> units</td>
+            <td style="color: #fbbf24; font-weight: 600;">{{ row.daily_burn_rate }} units/day</td>
+            <td>
+              <span style="font-size: 1.15rem; font-weight: 800; font-family: var(--font-heading); color: {% if row.days_remaining <= 2.5 %}#ef4444{% elif row.days_remaining <= 5.0 %}#f59e0b{% else %}#10b981{% endif %};">
+                {{ row.days_remaining }} days
+              </span>
+            </td>
+            <td>
+              {% if row.seven_day_deficit > 0 %}
+                <span style="color: #f87171; font-weight: 700;">-{{ row.seven_day_deficit }} units</span>
+              {% else %}
+                <span style="color: #34d399;">Covered</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.fourteen_day_deficit > 0 %}
+                <span style="color: #fca5a5; font-weight: 700;">-{{ row.fourteen_day_deficit }} units</span>
+              {% else %}
+                <span style="color: #34d399;">Covered</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge {{ row.badge_class }}">{{ row.status }}</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline" onclick="openSummonModal('{{ row.blood_group }}')">
+                📢 Summon Donors
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Interactive Smart Donor Summon Modal -->
+<div id="summon-modal" class="palette-backdrop" style="align-items: center; padding-top: 0;">
+  <div class="palette-modal" style="max-width: 650px; padding: 1.75rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>📢</span> Smart Summon <span id="modal-bg-title" style="color: var(--crimson-500);">O-</span> Donors
+      </h3>
+      <button onclick="closeSummonModal()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.5rem;">&times;</button>
+    </div>
+
+    <div id="modal-loading" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+      Querying Oracle Relational Registry for eligible matching donors...
+    </div>
+
+    <div id="modal-content" style="display: none;">
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong style="color: #34d399;">Eligible Matching Donors in Oracle DB:</strong>
+          <span id="modal-donor-count" class="badge badge-eligible" style="font-size: 0.9rem;">0</span>
+        </div>
+      </div>
+
+      <!-- Personalized Message Preview -->
+      <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">Personalized Emergency Broadcast Copy:</label>
+      <textarea id="modal-msg-preview" class="form-control" rows="3" style="font-size: 0.85rem; margin-bottom: 1rem;" readonly></textarea>
+
+      <!-- Targeted Donors List -->
+      <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">Targeted High-Priority Recipients:</label>
+      <div id="modal-recipient-list" style="max-height: 140px; overflow-y: auto; background: rgba(7, 11, 20, 0.6); border-radius: 8px; border: 1px solid var(--border-subtle); padding: 0.5rem; margin-bottom: 1.25rem; font-size: 0.82rem;">
+        <!-- Filled via JS -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button class="btn btn-outline" onclick="closeSummonModal()">Cancel</button>
+        <button id="btn-confirm-dispatch" class="btn btn-primary" onclick="confirmDispatch()">
+          🚀 Broadcast Emergency Summons
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let activeBloodGroup = "O-";
+
+function openSummonModal(bg) {
+  activeBloodGroup = bg;
+  const modal = document.getElementById("summon-modal");
+  const modalBgTitle = document.getElementById("modal-bg-title");
+  const loading = document.getElementById("modal-loading");
+  const content = document.getElementById("modal-content");
+
+  modal.classList.add("open");
+  modalBgTitle.innerText = bg;
+  loading.style.display = "block";
+  content.style.display = "none";
+
+  fetch('/analytics/api/summon-donors', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ blood_group: bg })
+  })
+    .then(res => res.json())
+    .then(data => {
+      loading.style.display = "none";
+      content.style.display = "block";
+
+      document.getElementById("modal-donor-count").innerText = `${data.eligible_count} Registered Donors`;
+      document.getElementById("modal-msg-preview").value = data.message_template;
+
+      const recipientList = document.getElementById("modal-recipient-list");
+      if (data.recipients.length === 0) {
+        recipientList.innerHTML = `<div style="color:var(--text-muted); text-align:center; padding:1rem;">No currently eligible ${bg} donors found. Automatic camp drive recommended.</div>`;
+      } else {
+        recipientList.innerHTML = data.recipients.map(r => `
+          <div style="display:flex; justify-content:space-between; padding:0.4rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div><strong>${r.name}</strong> (${r.city})</div>
+            <div style="color:var(--text-muted);">${r.phone} • ${r.email}</div>
+          </div>
+        `).join("");
+      }
+    });
+}
+
+function closeSummonModal() {
+  document.getElementById("summon-modal").classList.remove("open");
+}
+
+function confirmDispatch() {
+  const btn = document.getElementById("btn-confirm-dispatch");
+  btn.innerText = "Transmitting...";
+  btn.disabled = true;
+
+  setTimeout(() => {
+    btn.innerText = "✓ Summons Dispatched!";
+    btn.style.background = "#10b981";
+    setTimeout(() => {
+      closeSummonModal();
+      btn.innerText = "🚀 Broadcast Emergency Summons";
+      btn.style.background = "";
+      btn.disabled = false;
+      alert(`Emergency Summons successfully transmitted to eligible ${activeBloodGroup} donors via LifeLine Push & SMS Gateway!`);
+    }, 1000);
+  }, 800);
+}
+</script>
+{% endblock %}

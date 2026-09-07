@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LifeLine Connect | Enterprise Blood Bank Network{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e11d48'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar (Enterprise Organized Command Bar) -->
+  <nav class="navbar" id="app-navbar">
+    <div class="navbar-left">
+      <a href="{{ url_for('main.dashboard') }}" class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+          </svg>
+        </div>
+        <div class="brand-text-wrap">
+          <span class="brand-title">LifeLine <span style="color: var(--crimson-500);">Connect</span></span>
+          <span class="brand-badge">🇱🇰 NBTS</span>
+        </div>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <!-- Main Navigation Menu -->
+      <ul class="nav-links" id="main-nav-links">
+        <!-- Dashboard Direct Link -->
+        <li class="nav-item">
+          <a href="{{ url_for('main.dashboard') }}" class="nav-link-btn {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+        </li>
+
+        <!-- Operations Dropdown -->
+        <li class="nav-item nav-has-dropdown">
+          <button type="button" class="nav-link-btn {% if request.endpoint and (request.endpoint.startswith('donors.') or request.endpoint.startswith('camps.') or request.endpoint.startswith('inventory.') or request.endpoint.startswith('hospitals.')) %}active{% endif %}">
+            <span class="nav-icon">🩸</span>
+            <span>Operations</span>
+            <span class="nav-chevron">▼</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="{{ url_for('donors.index') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #fb7185; background: rgba(225,29,72,0.12);">🩸</div>
+              <div>
+                <div class="dropdown-card-title">Donors Registry</div>
+                <div class="dropdown-card-desc">Profiles, NICs, and health eligibility</div>
+              </div>
+            </a>
+            <a href="{{ url_for('camps.index') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #fbbf24; background: rgba(245,158,11,0.12);">⛺</div>
+              <div>
+                <div class="dropdown-card-title">Blood Donation Camps</div>
+                <div class="dropdown-card-desc">Mobile drives, venues & donor feedback</div>
+              </div>
+            </a>
+            <a href="{{ url_for('inventory.stock') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #38bdf8; background: rgba(56,189,248,0.12);">🧪</div>
+              <div>
+                <div class="dropdown-card-title">Blood Inventory</div>
+                <div class="dropdown-card-desc">Cryo stock matrix, FEFO & expirations</div>
+              </div>
+            </a>
+            <a href="{{ url_for('hospitals.requests') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #34d399; background: rgba(16,185,129,0.12);">🏥</div>
+              <div>
+                <div class="dropdown-card-title">Hospitals & Requisitions</div>
+                <div class="dropdown-card-desc">Clinical demand & dispatch logistics</div>
+              </div>
+            </a>
+          </div>
+        </li>
+
+        <!-- Intelligence & Analytics Dropdown -->
+        <li class="nav-item nav-has-dropdown">
+          <button type="button" class="nav-link-btn {% if request.endpoint and (request.endpoint.startswith('logistics.') or request.endpoint.startswith('analytics.') or request.endpoint.startswith('reports.') or request.endpoint.startswith('database.')) %}active{% endif %}">
+            <span class="nav-icon">⚡</span>
+            <span>Intelligence</span>
+            <span class="nav-chevron">▼</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="{{ url_for('logistics.index') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #22d3ee; background: rgba(34,211,238,0.12);">🗺️</div>
+              <div>
+                <div class="dropdown-card-title">Logistics Radar & GPS</div>
+                <div class="dropdown-card-desc">Live Sri Lanka map & IoT cold-chain</div>
+              </div>
+            </a>
+            <a href="{{ url_for('analytics.forecaster') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #c084fc; background: rgba(192,132,252,0.12);">🤖</div>
+              <div>
+                <div class="dropdown-card-title">AI Shortage Forecaster</div>
+                <div class="dropdown-card-desc">Predictive clinical runway & smart summon</div>
+              </div>
+            </a>
+            <a href="{{ url_for('reports.index') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #f43f5e; background: rgba(244,63,94,0.12);">📊</div>
+              <div>
+                <div class="dropdown-card-title">PL/SQL Business Reports</div>
+                <div class="dropdown-card-desc">5 Oracle relational analytics dossiers</div>
+              </div>
+            </a>
+            <a href="{{ url_for('database.index') }}" class="dropdown-card">
+              <div class="dropdown-card-icon" style="color: #38bdf8; background: rgba(56,189,248,0.12);">🗄️</div>
+              <div>
+                <div class="dropdown-card-title">Database Explorer & Studio</div>
+                <div class="dropdown-card-desc">Live Oracle 21c tables, schema & SQL console</div>
+              </div>
+            </a>
+          </div>
+        </li>
+
+        <!-- Emergency Appeals Direct Link -->
+        <li class="nav-item">
+          <a href="{{ url_for('appeals.index') }}" class="nav-link-btn emergency-nav-pill {% if request.endpoint and request.endpoint.startswith('appeals.') %}active{% endif %}">
+            <span class="pulse-dot" style="background:#f43f5e; box-shadow:0 0 8px #f43f5e; width:7px; height:7px; margin-right:2px;"></span>
+            <span>🚨 Appeals</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Right Actions Section -->
+    <div class="navbar-actions">
+      <!-- Universal Command Palette Trigger (Ctrl+K) -->
+      <button id="btn-trigger-palette" class="nav-search-btn" title="Open Command Palette (Ctrl+K)">
+        <span style="font-size: 0.85rem;">🔍</span>
+        <span>Quick Search</span>
+        <kbd class="nav-search-kbd">Ctrl+K</kbd>
+      </button>
+
+      <!-- Clinical Audio Feedback Toggle -->
+      <button id="btn-sound-toggle" class="nav-icon-btn" title="Toggle Clinical Feedback Tone">
+        🔇
+      </button>
+
+      <!-- User Profile / Session Menu -->
+      {% if current_user %}
+        <div class="nav-item nav-has-dropdown">
+          <div class="nav-user-chip">
+            <div class="user-avatar">{{ current_user.username[:2] }}</div>
+            <div class="user-info-text">
+              <span class="user-name-display">{{ current_user.username }}</span>
+              <span class="user-role-badge">{{ current_user.role }}</span>
+            </div>
+            <span class="nav-chevron">▼</span>
+          </div>
+          <div class="nav-dropdown-menu right-aligned" style="min-width: 230px;">
+            <div style="padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 0.35rem;">
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Signed in as</div>
+              <div style="font-weight: 600; font-size: 0.88rem; color: #fff;">{{ current_user.full_name }}</div>
+            </div>
+            {% if current_user.donor_id %}
+              <a href="{{ url_for('donors.donor_detail', donor_id=current_user.donor_id) }}" class="dropdown-card">
+                <div class="dropdown-card-icon">🪪</div>
+                <div>
+                  <div class="dropdown-card-title">My Holographic Pass</div>
+                  <div class="dropdown-card-desc">Digital QR card & dossier</div>
+                </div>
+              </a>
+            {% endif %}
+            <a href="{{ url_for('inventory.donate') }}" class="dropdown-card">
+              <div class="dropdown-card-icon">💉</div>
+              <div>
+                <div class="dropdown-card-title">Quick Intake</div>
+                <div class="dropdown-card-desc">Clinical donation pre-screening</div>
+              </div>
+            </a>
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.35rem; padding-top: 0.35rem;">
+              <a href="{{ url_for('auth.logout') }}" class="dropdown-card" style="color: #fca5a5;">
+                <div class="dropdown-card-icon" style="color: #f87171; background: rgba(239,68,68,0.12);">🚪</div>
+                <div>
+                  <div class="dropdown-card-title" style="color: #f87171;">Sign Out</div>
+                  <div class="dropdown-card-desc">End your active session</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div style="display: flex; gap: 0.4rem; align-items: center;">
+          <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline">Sign In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Register</a>
+        </div>
+      {% endif %}
+
+      <!-- Mobile Hamburger Toggle Button -->
+      <button id="nav-mobile-toggle" class="nav-mobile-toggle" aria-label="Toggle Navigation Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Live Clinical Telemetry & EKG Strip -->
+  <div class="telemetry-ticker">
+    <div class="telemetry-left">
+      <span class="status-pill">
+        <span class="pulse-dot"></span>
+        <span>SYSTEM OPERATIONAL</span>
+      </span>
+      <span>•</span>
+      <span>Oracle 21c Pool: <strong style="color: #38bdf8;">ACTIVE</strong></span>
+      <span>•</span>
+      <span>MongoDB 8.0: <strong style="color: #34d399;">CONNECTED</strong></span>
+      <span>•</span>
+      <span>FEFO Dispatch Engine: <strong style="color: #fbbf24;">READY</strong></span>
+      <span>•</span>
+      <span>Emergency Hotline: <strong style="color: #38bdf8;">1990 / 011 236 9931</strong></span>
+    </div>
+    <div class="ekg-container">
+      <svg class="ekg-svg" viewBox="0 0 100 20">
+        <polyline class="ekg-path" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          points="0,10 20,10 28,10 32,3 36,17 40,2 45,15 48,10 60,10 100,10" />
+      </svg>
+      <span style="font-weight: 600; font-size: 0.75rem; color: #fda4af;">72 BPM</span>
+    </div>
+  </div>
+
+  <!-- Flash Message Banners -->
+  <main class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span>{{ message }}</span>
+              <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Floating Action Button (FAB) Speed Dial -->
+  <div id="fab-container" class="fab-container">
+    <button id="fab-main" class="fab-main" title="Quick Action Speed Dial">
+      ⚡
+    </button>
+    <div class="fab-menu">
+      <a href="{{ url_for('inventory.donate') }}" class="fab-action">
+        <span>💉</span> Fast Donation Intake
+      </a>
+      <a href="{{ url_for('appeals.new_appeal') }}" class="fab-action" style="background: rgba(225,29,72,0.9);">
+        <span>🚨</span> Emergency Appeal
+      </a>
+      <a href="{{ url_for('hospitals.new_request') }}" class="fab-action">
+        <span>🏥</span> Hospital Requisition
+      </a>
+      <a href="#" id="fab-scroll-top" class="fab-action" style="background: rgba(14,165,233,0.85);">
+        <span>⬆️</span> Back to Top
+      </a>
+    </div>
+  </div>
+
+  <!-- Universal Command Palette Modal (Ctrl+K) -->
+  <div id="command-palette" class="palette-backdrop">
+    <div class="palette-modal">
+      <div class="palette-input-wrap">
+        <span class="palette-search-icon">🔍</span>
+        <input type="text" id="palette-input" class="palette-input" placeholder="Type a command or jump to page..." autocomplete="off">
+        <span class="palette-esc-badge">ESC to close</span>
+      </div>
+      <div id="palette-items" class="palette-results">
+        <!-- Populated via main.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div>
+      <strong>LifeLine Connect</strong> &copy; 2026. National Blood Transfusion Service (NBTS) Sri Lanka • Central Blood Bank, Narahenpita, Colombo 05.
+    </div>
+    <div style="display: flex; gap: 1.5rem;">
+      <span><strong style="color: #38bdf8;">Oracle 21c</strong> Relational Engine</span>
+      <span><strong style="color: #34d399;">MongoDB 8.0</strong> Unstructured Storage</span>
+      <span><strong style="color: #fb7185;">Python Flask</strong> MVC Core</span>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

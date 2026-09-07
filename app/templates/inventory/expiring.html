@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Expiring Stock Alert | PL/SQL Report 2{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">⚠️ Expiring Blood Inventory Alert</h1>
+    <p class="page-subtitle">Powered by Oracle PL/SQL Business Report 2 (PKG_LIFELINE_REPORTS.fn_report_inventory_expiring)</p>
+  </div>
+  <a href="{{ url_for('inventory.stock') }}" class="btn btn-outline">&larr; Back to Inventory</a>
+</div>
+
+<!-- Time Horizon Selector & Metrics -->
+<div class="grid-cols-3" style="margin-bottom: 2rem;">
+  <div class="glass-card stat-card">
+    <div class="stat-icon amber">⏳</div>
+    <div>
+      <div class="stat-label">Critical Expiring (&le; {{ days }} Days)</div>
+      <div class="stat-value" style="color: #fbbf24;">{{ critical_count }}</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon crimson">⛔</div>
+    <div>
+      <div class="stat-label">Total Expired Units</div>
+      <div class="stat-value" style="color: #f87171;">{{ expired_count }}</div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center;">
+    <label class="form-label">Select Expiration Alert Window</label>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('inventory.expiring', days=3) }}" class="btn btn-sm {% if days == 3 %}btn-primary{% else %}btn-outline{% endif %}">3 Days</a>
+      <a href="{{ url_for('inventory.expiring', days=7) }}" class="btn btn-sm {% if days == 7 %}btn-primary{% else %}btn-outline{% endif %}">7 Days</a>
+      <a href="{{ url_for('inventory.expiring', days=14) }}" class="btn btn-sm {% if days == 14 %}btn-primary{% else %}btn-outline{% endif %}">14 Days</a>
+      <a href="{{ url_for('inventory.expiring', days=30) }}" class="btn btn-sm {% if days == 30 %}btn-primary{% else %}btn-outline{% endif %}">30 Days</a>
+    </div>
+  </div>
+</div>
+
+<!-- Table of Expiring Units -->
+<div class="glass-card">
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Unit ID</th>
+          <th>Blood Group</th>
+          <th>Component</th>
+          <th>Storage Location</th>
+          <th>Collection Date</th>
+          <th>Expiration Date</th>
+          <th>Days Until Expiry</th>
+          <th>Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if units %}
+          {% for u in units %}
+            <tr {% if u.freshness_category == 'EXPIRED' %}style="background: rgba(225,29,72,0.05);"{% endif %}>
+              <td><strong>#{{ u.unit_id }}</strong></td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af;">{{ u.blood_group }}</span>
+              </td>
+              <td><strong>{{ u.component_type }}</strong></td>
+              <td style="color: var(--text-secondary);">{{ u.storage_location }}</td>
+              <td>{{ u.collection_date|format_date }}</td>
+              <td>{{ u.expiration_date|format_date }}</td>
+              <td>
+                {% if u.days_remaining < 0 %}
+                  <span style="color: #f87171; font-weight:700;">Expired ({{ u.days_remaining }}d ago)</span>
+                {% else %}
+                  <span style="color: #fbbf24; font-weight:700;">{{ u.days_remaining }} days left</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if u.freshness_category == 'CRITICAL_EXPIRING_SOON' %}
+                  <span class="badge badge-critical">Critical Expiring</span>
+                {% elif u.freshness_category == 'EXPIRED' %}
+                  <span class="badge badge-ineligible">Expired (Discard)</span>
+                {% else %}
+                  <span class="badge badge-eligible">Stable</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No units expiring within the next {{ days }} days.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

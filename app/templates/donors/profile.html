@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}{{ donor.first_name }} {{ donor.last_name }} | Donor Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ donor.first_name }} {{ donor.last_name }}</h1>
+    <p class="page-subtitle">Donor Card #{{ donor.donor_id }} &bull; Registered {{ donor.created_at|format_date }}</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('donors.index') }}" class="btn btn-outline">&larr; Donor Directory</a>
+    <a href="{{ url_for('inventory.donate') }}?donor_id={{ donor.donor_id }}" class="btn btn-primary">+ Record Donation</a>
+  </div>
+</div>
+
+<div class="grid-cols-2">
+  <!-- Profile & Vitals Card -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+      <div>
+        <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 1.1rem; padding: 0.35rem 0.9rem;">
+          {{ donor.blood_group }} ({{ donor.rh_factor }})
+        </span>
+      </div>
+      <div>
+        <span id="eligibility-status-badge" class="badge {% if donor.eligibility_status == 'ELIGIBLE' %}badge-eligible{% elif donor.eligibility_status == 'TEMPORARILY_DEFERRED' %}badge-deferred{% else %}badge-ineligible{% endif %}">
+          {{ donor.eligibility_status }}
+        </span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; font-size: 0.92rem;">
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">EMAIL</span>
+        <strong>{{ donor.email }}</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">PHONE</span>
+        <strong>{{ donor.phone }}</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">WEIGHT</span>
+        <strong>{{ donor.weight_kg }} kg</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">HEMOGLOBIN</span>
+        <strong>{{ donor.hemoglobin_level }} g/dL</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">CITY / LOCATION</span>
+        <strong>{{ donor.city }}</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); display:block; font-size: 0.8rem;">NEXT ELIGIBLE DATE</span>
+        <strong style="color: #38bdf8;">{{ donor.next_eligible_date|format_date }}</strong>
+      </div>
+    </div>
+
+    <!-- Live PL/SQL Eligibility Evaluation Box -->
+    <div style="background: rgba(13, 21, 39, 0.9); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">PL/SQL Eligibility Assessment</span>
+        <button id="btn-check-eligibility" data-donor-id="{{ donor.donor_id }}" class="btn btn-sm btn-outline">
+          Re-evaluate
+        </button>
+      </div>
+      <div id="eligibility-msg-box" style="font-size: 0.85rem; color: {% if 'ELIGIBLE' in eligibility_msg %}#34d399{% else %}#fbbf24{% endif %};">
+        {{ eligibility_msg }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Digital Holographic Wallet Donor Pass -->
+  <div class="glass-card" style="background: linear-gradient(135deg, rgba(23, 37, 68, 0.9), rgba(13, 21, 39, 0.95)); border: 2px solid rgba(225, 29, 72, 0.4); position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(225,29,72,0.15);">
+    <div style="position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: radial-gradient(circle, rgba(225,29,72,0.3) 0%, transparent 70%); pointer-events: none;"></div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.4rem;">🩸</span>
+        <div>
+          <div style="font-family: var(--font-heading); font-weight: 800; color: #fff; font-size: 1rem; letter-spacing: 0.05em;">LIFELINE CONNECT</div>
+          <div style="font-size: 0.68rem; color: var(--text-secondary); text-transform: uppercase;">Official Verified Donor Pass</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="window.print()" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+        🖨️ Print Pass
+      </button>
+    </div>
+
+    <!-- Pass Center Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Hero Donor</div>
+        <div style="font-size: 1.35rem; font-weight: 800; color: #fff; font-family: var(--font-heading);">
+          {{ donor.first_name }} {{ donor.last_name }}
+        </div>
+        <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.2rem;">ID: #{{ donor.donor_id }} • {{ donor.city }}</div>
+
+        <!-- Estimated Lives Saved Counter -->
+        <div style="margin-top: 1rem; display: inline-block; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.4rem 0.8rem;">
+          <span style="font-size: 0.75rem; color: var(--text-secondary);">ESTIMATED LIVES SAVED:</span>
+          <strong style="color: #34d399; font-size: 1.1rem; margin-left: 0.4rem;">
+            {{ (donations|length * 3) if (donations|length > 0) else 3 }} Lives ❤️
+          </strong>
+        </div>
+      </div>
+
+      <!-- Scannable QR Code Box -->
+      <div style="text-align: center; background: #fff; padding: 0.6rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+        <!-- SVG QR Code Matrix -->
+        <svg width="95" height="95" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#ffffff" />
+          <!-- Corner Position Markers -->
+          <rect x="5" y="5" width="26" height="26" fill="#070b14" />
+          <rect x="9" y="9" width="18" height="18" fill="#ffffff" />
+          <rect x="13" y="13" width="10" height="10" fill="#e11d48" />
+
+          <rect x="69" y="5" width="26" height="26" fill="#070b14" />
+          <rect x="73" y="9" width="18" height="18" fill="#ffffff" />
+          <rect x="77" y="13" width="10" height="10" fill="#e11d48" />
+
+          <rect x="5" y="69" width="26" height="26" fill="#070b14" />
+          <rect x="9" y="73" width="18" height="18" fill="#ffffff" />
+          <rect x="13" y="77" width="10" height="10" fill="#e11d48" />
+
+          <!-- Dynamic QR Data Blocks -->
+          <rect x="36" y="8" width="6" height="6" fill="#070b14" />
+          <rect x="46" y="8" width="6" height="12" fill="#070b14" />
+          <rect x="56" y="12" width="6" height="8" fill="#070b14" />
+          <rect x="38" y="24" width="8" height="6" fill="#070b14" />
+          <rect x="50" y="26" width="6" height="10" fill="#070b14" />
+
+          <rect x="8" y="38" width="12" height="6" fill="#070b14" />
+          <rect x="26" y="38" width="8" height="14" fill="#070b14" />
+          <rect x="40" y="42" width="20" height="16" fill="#e11d48" />
+          <rect x="68" y="38" width="10" height="6" fill="#070b14" />
+          <rect x="84" y="42" width="8" height="10" fill="#070b14" />
+
+          <rect x="8" y="56" width="10" height="8" fill="#070b14" />
+          <rect x="24" y="58" width="8" height="6" fill="#070b14" />
+          <rect x="68" y="54" width="12" height="12" fill="#070b14" />
+          <rect x="86" y="60" width="6" height="8" fill="#070b14" />
+
+          <rect x="38" y="68" width="8" height="12" fill="#070b14" />
+          <rect x="52" y="72" width="10" height="8" fill="#070b14" />
+          <rect x="68" y="76" width="8" height="14" fill="#070b14" />
+          <rect x="82" y="80" width="10" height="10" fill="#070b14" />
+        </svg>
+        <div style="font-size: 0.65rem; color: #070b14; font-weight: 700; margin-top: 0.15rem;">SCAN FOR INTAKE</div>
+      </div>
+    </div>
+
+    <!-- Gamified Impact Badges Showcase -->
+    <div style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem;">ACHIEVEMENT HONORS &amp; TIERS:</div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        {% if donations|length >= 5 %}
+          <span class="badge" style="background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4);">
+            🥇 Gold Centurion (5+ Donations)
+          </span>
+        {% elif donations|length >= 3 %}
+          <span class="badge" style="background: rgba(148,163,184,0.2); color: #e2e8f0; border: 1px solid rgba(148,163,184,0.4);">
+            🥈 Silver Guardian (3+ Donations)
+          </span>
+        {% else %}
+          <span class="badge" style="background: rgba(217,119,6,0.2); color: #f59e0b; border: 1px solid rgba(217,119,6,0.4);">
+            🥉 Bronze Sentinel (Active Lifesaver)
+          </span>
+        {% endif %}
+
+        {% if donor.rh_factor == 'NEGATIVE' %}
+          <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);">
+            💎 Rh-Negative Champion
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Itemized Donation History Table -->
+<div class="glass-card" style="margin-top: 2rem;">
+  <h3 style="font-size: 1.15rem; margin-bottom: 1.25rem;">Donation Event History</h3>
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Donation ID</th>
+          <th>Date</th>
+          <th>Location / Camp</th>
+          <th>Units</th>
+          <th>BP (Sys/Dia)</th>
+          <th>Pulse</th>
+          <th>Hemoglobin</th>
+          <th>Screening</th>
+          <th>Lab Test</th>
+          <th>Clinical Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if donations %}
+          {% for dn in donations %}
+            <tr>
+              <td><strong>#{{ dn.donation_id }}</strong></td>
+              <td>{{ dn.donation_date|format_date }}</td>
+              <td>{{ dn.camp_name }}</td>
+              <td><span style="font-weight:700; color:var(--crimson-500);">{{ dn.units_donated }}</span></td>
+              <td>{{ dn.blood_pressure_sys }}/{{ dn.blood_pressure_dia }}</td>
+              <td>{{ dn.pulse_rate }} bpm</td>
+              <td>{{ dn.hemoglobin_reading }} g/dL</td>
+              <td><span class="badge badge-eligible">{{ dn.screening_status }}</span></td>
+              <td><span class="badge badge-active">{{ dn.tested_status }}</span></td>
+              <td style="font-size: 0.82rem; color: var(--text-muted);">{{ dn.notes or 'Routine donation' }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No donations recorded for this donor yet.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Report 5: Staff Deployment & Workload | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📊 Report 5: Staff &amp; Volunteer Deployment Workload</h1>
+    <p class="page-subtitle">Oracle PL/SQL Package: <code>PKG_LIFELINE_REPORTS.fn_report_staff_workload</code></p>
+  </div>
+  <a href="{{ url_for('reports.index') }}" class="btn btn-outline">&larr; Back to Reports</a>
+</div>
+
+<!-- High-level Workload KPIs -->
+<div class="grid-cols-2" style="margin-bottom: 2rem;">
+  <div class="glass-card stat-card">
+    <div class="stat-icon emerald">⏱️</div>
+    <div>
+      <div class="stat-label">Total Operational Hours Logged</div>
+      <div class="stat-value">{{ total_hours }} Hours</div>
+    </div>
+  </div>
+
+  <div class="glass-card stat-card">
+    <div class="stat-icon sky">⛺</div>
+    <div>
+      <div class="stat-label">Total Completed Camp Shifts</div>
+      <div class="stat-value">{{ total_shifts }} Shifts</div>
+    </div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Staff Name</th>
+          <th>Clinical / Operational Role</th>
+          <th>License No</th>
+          <th>Employment Status</th>
+          <th>Shifts Scheduled</th>
+          <th>Shifts Attended</th>
+          <th>Total Hours Worked</th>
+          <th>Camps Supported</th>
+          <th>Compliance Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if data %}
+          {% for r in data %}
+            <tr>
+              <td><strong style="color: #fff;">{{ r.staff_name }}</strong></td>
+              <td>
+                <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc;">
+                  {{ r.clinical_role }}
+                </span>
+              </td>
+              <td><code>{{ r.license_number or 'N/A' }}</code></td>
+              <td>
+                <span class="badge {% if r.employment_status == 'ACTIVE' %}badge-eligible{% else %}badge-deferred{% endif %}">
+                  {{ r.employment_status }}
+                </span>
+              </td>
+              <td>{{ r.total_shifts_scheduled }}</td>
+              <td><strong style="color: #34d399;">{{ r.shifts_attended }}</strong></td>
+              <td><strong style="color: #fff;">{{ r.total_hours_worked }} hrs</strong></td>
+              <td>{{ r.camps_supported }} Camps</td>
+              <td>
+                <span style="font-weight: 700; color: {% if r.shift_compliance_pct == 100 %}#34d399{% elif r.shift_compliance_pct >= 50 %}#fbbf24{% else %}#f87171{% endif %};">
+                  {{ r.shift_compliance_pct }}%
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No staff workload data available.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

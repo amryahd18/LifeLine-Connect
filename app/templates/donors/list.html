@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Registry | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Donor Registry</h1>
+    <p class="page-subtitle">Track donor vitals, blood classification, and automated eligibility state</p>
+  </div>
+  <a href="{{ url_for('donors.register') }}" class="btn btn-primary">+ Register New Donor</a>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-weight: 700; font-size: 1.05rem;">👥 Instant Live Filter:</span>
+      <input type="text" data-table-filter="#donors-table" data-count-target="donor-list-count"
+             placeholder="Search by name, city, email, blood group..." 
+             class="form-control" style="width: 320px; font-size: 0.88rem; padding: 0.45rem 0.85rem;">
+      <span class="badge" style="background: rgba(16,185,129,0.15); color: #34d399;">
+        <span id="donor-list-count">{{ donors|length }}</span> Donors Shown
+      </span>
+    </div>
+
+    <!-- Quick Blood Group Filter Pills -->
+    <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter=\'#donors-table\']').value=''; document.querySelector('[data-table-filter=\'#donors-table\']').dispatchEvent(new Event('input'));">All</button>
+      {% for bg in ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'] %}
+        <button class="btn btn-sm btn-outline" style="padding: 0.35rem 0.65rem;" onclick="document.querySelector('[data-table-filter=\'#donors-table\']').value='{{ bg }}'; document.querySelector('[data-table-filter=\'#donors-table\']').dispatchEvent(new Event('input'));">{{ bg }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Server Search Form -->
+  <form method="GET" action="{{ url_for('donors.index') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem;">
+    <div style="flex: 2; min-width: 200px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Search: Name, Email, City</label>
+      <input type="text" name="search" class="form-control" placeholder="e.g. Kasun, Colombo, Kandy..." value="{{ search }}">
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Filter: Blood Group</label>
+      <select name="blood_group" class="form-select">
+        <option value="">All Groups</option>
+        {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+          <option value="{{ bg }}" {% if selected_bg == bg %}selected{% endif %}>{{ bg }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Filter: Status</label>
+      <select name="eligibility" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="ELIGIBLE" {% if selected_el == 'ELIGIBLE' %}selected{% endif %}>Eligible</option>
+        <option value="TEMPORARILY_DEFERRED" {% if selected_el == 'TEMPORARILY_DEFERRED' %}selected{% endif %}>Deferred</option>
+        <option value="PERMANENTLY_INELIGIBLE" {% if selected_el == 'PERMANENTLY_INELIGIBLE' %}selected{% endif %}>Ineligible</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-outline" style="height: 40px;">Run Query</button>
+      <a href="{{ url_for('donors.index') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Donors Table -->
+<div class="glass-card">
+  <div class="table-responsive">
+    <table id="donors-table" class="custom-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Donor Name</th>
+          <th>Contact Info</th>
+          <th>Blood Group</th>
+          <th>Vitals</th>
+          <th>Eligibility</th>
+          <th>Donations</th>
+          <th>Next Eligible</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if donors %}
+          {% for d in donors %}
+            <tr>
+              <td><span style="color: var(--text-muted); font-weight:600;">#{{ d.donor_id }}</span></td>
+              <td>
+                <a href="{{ url_for('donors.profile', donor_id=d.donor_id) }}">
+                  <strong style="color: #fff;">{{ d.first_name }} {{ d.last_name }}</strong>
+                </a>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ d.city }}</div>
+              </td>
+              <td>
+                <div>{{ d.email }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ d.phone }}</div>
+              </td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af; font-size: 0.85rem;">
+                  {{ d.blood_group }}
+                </span>
+              </td>
+              <td style="font-size: 0.85rem;">
+                <div>Wt: {{ d.weight_kg }} kg</div>
+                <div style="color: var(--text-muted);">Hb: {{ d.hemoglobin_level }} g/dL</div>
+              </td>
+              <td>
+                {% if d.eligibility_status == 'ELIGIBLE' %}
+                  <span class="badge badge-eligible">Eligible</span>
+                {% elif d.eligibility_status == 'TEMPORARILY_DEFERRED' %}
+                  <span class="badge badge-deferred">Deferred</span>
+                {% else %}
+                  <span class="badge badge-ineligible">Ineligible</span>
+                {% endif %}
+              </td>
+              <td>
+                <span style="font-weight: 700; color: #38bdf8;">{{ d.total_donations }}</span>
+              </td>
+              <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                {{ d.next_eligible_date|format_date }}
+              </td>
+              <td>
+                <a href="{{ url_for('donors.profile', donor_id=d.donor_id) }}" class="btn btn-sm btn-outline">
+                  Profile &rarr;
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No donors matching filter criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

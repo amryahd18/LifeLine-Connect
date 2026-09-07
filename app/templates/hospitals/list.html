@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Registry | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Registered Healthcare Facilities</h1>
+    <p class="page-subtitle">Partner trauma centers, government hospitals, and regional surgical facilities</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('hospitals.new_request') }}" class="btn btn-primary">+ Create Blood Requisition</a>
+    <a href="{{ url_for('hospitals.dispatches') }}" class="btn btn-outline">Dispatch Audit Log</a>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Hospital Name</th>
+          <th>License No</th>
+          <th>Category</th>
+          <th>Contact Person</th>
+          <th>Phone &amp; Email</th>
+          <th>Address &amp; City</th>
+          <th>Requisitions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hospitals %}
+          <tr>
+            <td>
+              <strong style="color: #fff; font-size: 1rem;">{{ h.hospital_name }}</strong>
+            </td>
+            <td><code>{{ h.license_no }}</code></td>
+            <td>
+              <span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc;">
+                {{ h.category }}
+              </span>
+            </td>
+            <td>{{ h.contact_person }}</td>
+            <td style="font-size: 0.85rem;">
+              <div>{{ h.phone }}</div>
+              <div style="color: var(--text-muted);">{{ h.email }}</div>
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-secondary);">
+              {{ h.address }}, {{ h.city }}
+            </td>
+            <td>
+              <span style="font-weight: 700; color: #38bdf8;">{{ h.total_requests }} Orders</span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

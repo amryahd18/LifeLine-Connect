@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Enterprise Business Reports | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Oracle PL/SQL Business Intelligence Reports</h1>
+    <p class="page-subtitle">Production analytical reports executed inside Oracle Database 21c via PKG_LIFELINE_REPORTS ref cursors</p>
+  </div>
+</div>
+
+<div class="grid-cols-2">
+  <!-- Report 1 -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af;">REPORT 1</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">fn_report_camps_collections</span>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Camps Collection by Blood Group</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Multi-dimensional aggregation of total blood units collected across all completed and active field donation drives, broken down by ABO/Rh group and venue.
+      </p>
+    </div>
+    <a href="{{ url_for('reports.report1') }}" class="btn btn-primary" style="width: 100%;">
+      Open Report 1 &rarr;
+    </a>
+  </div>
+
+  <!-- Report 2 -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: rgba(245,158,11,0.2); color: #fbbf24;">REPORT 2</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">fn_report_inventory_expiring</span>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Inventory Levels &amp; Expiring Units</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        FEFO inventory management audit identifying units nearing shelf-life exhaustion within custom configurable windows (3, 7, 14, or 30 days) across components.
+      </p>
+    </div>
+    <a href="{{ url_for('reports.report2') }}" class="btn btn-primary" style="width: 100%;">
+      Open Report 2 &rarr;
+    </a>
+  </div>
+
+  <!-- Report 3 -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: rgba(16,185,129,0.2); color: #34d399;">REPORT 3</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">fn_report_donor_history</span>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Donor Eligibility &amp; Lifetime History</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Individual donor dossier with automated clinical clearance evaluation, days until next eligible donation, and complete itemized donation history.
+      </p>
+    </div>
+    <a href="{{ url_for('reports.report3') }}" class="btn btn-primary" style="width: 100%;">
+      Open Report 3 &rarr;
+    </a>
+  </div>
+
+  <!-- Report 4 -->
+  <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: rgba(14,165,233,0.2); color: #38bdf8;">REPORT 4</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">fn_report_hospital_fulfillment</span>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Hospital Demand &amp; Fulfillment Efficiency</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Requisition volume metrics by hospital facility, fulfillment percentage, emergency order turnaround times, and pending deficit calculations.
+      </p>
+    </div>
+    <a href="{{ url_for('reports.report4') }}" class="btn btn-primary" style="width: 100%;">
+      Open Report 4 &rarr;
+    </a>
+  </div>
+
+  <!-- Report 5 -->
+  <div class="glass-card" style="grid-column: span 2; display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span class="badge" style="background: rgba(168,85,247,0.2); color: #d8b4fe;">REPORT 5</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">fn_report_staff_workload</span>
+      </div>
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Staff &amp; Volunteer Deployment Workload</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Clinical personnel and volunteer deployment metrics, tracking shifts scheduled, shifts attended, total hours logged, and role coverage (Doctors, Nurses, Phlebotomists).
+      </p>
+    </div>
+    <a href="{{ url_for('reports.report5') }}" class="btn btn-primary">
+      Open Report 5 &rarr;
+    </a>
+  </div>
+</div>
+{% endblock %}

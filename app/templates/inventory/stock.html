@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Blood Inventory & Stock Management | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Blood Inventory &amp; Stock Levels</h1>
+    <p class="page-subtitle">Track individual separated units, cold storage shelves, and FEFO shelf-life cycles</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('inventory.expiring') }}" class="btn btn-outline" style="border-color: #f59e0b; color: #fbbf24;">
+      ⚠️ Expiring Stock Alert
+    </a>
+    <a href="{{ url_for('inventory.donate') }}" class="btn btn-primary">+ Record Donation &amp; Inflow</a>
+  </div>
+</div>
+
+<!-- Stock Matrix Table -->
+<div class="glass-card" style="margin-bottom: 2rem;">
+  <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Component Stock Matrix by Blood Group (Oracle 21c)</h3>
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Blood Group</th>
+          <th>Available Units</th>
+          <th>Whole Blood</th>
+          <th>Red Blood Cells (RBC)</th>
+          <th>Platelets</th>
+          <th>Plasma</th>
+          <th>Reserved</th>
+          <th>Transfused</th>
+          <th>Expired</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in summary.groups %}
+          <tr>
+            <td>
+              <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af; font-size: 0.95rem;">
+                {{ g.blood_group }}
+              </span>
+            </td>
+            <td><strong style="color: #fff; font-size: 1.05rem;">{{ g.available_units }}</strong></td>
+            <td>{{ g.whole_blood }}</td>
+            <td>{{ g.rbc }}</td>
+            <td>{{ g.platelets }}</td>
+            <td>{{ g.plasma }}</td>
+            <td><span style="color: #fbbf24;">{{ g.reserved_units }}</span></td>
+            <td><span style="color: #38bdf8;">{{ g.transfused_units }}</span></td>
+            <td><span style="color: #f87171;">{{ g.expired_units }}</span></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Filter Bar for Units -->
+<div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-weight: 700; font-size: 1.05rem;">📦 Instant Search & Filter:</span>
+      <input type="text" data-table-filter="#inventory-units-table" data-count-target="inventory-match-count" 
+             placeholder="Type group, component, donor, storage bay..." 
+             class="form-control" style="width: 320px; font-size: 0.88rem; padding: 0.45rem 0.85rem;">
+      <span class="badge" style="background: rgba(14,165,233,0.15); color: #38bdf8;">
+        <span id="inventory-match-count">{{ units|length }}</span> Units Displayed
+      </span>
+    </div>
+
+    <!-- Quick Component Pills -->
+    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter]').value=''; document.querySelector('[data-table-filter]').dispatchEvent(new Event('input'));">All</button>
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter]').value='RBC'; document.querySelector('[data-table-filter]').dispatchEvent(new Event('input'));">RBC</button>
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter]').value='PLATELETS'; document.querySelector('[data-table-filter]').dispatchEvent(new Event('input'));">Platelets</button>
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter]').value='WHOLE_BLOOD'; document.querySelector('[data-table-filter]').dispatchEvent(new Event('input'));">Whole Blood</button>
+      <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-table-filter]').value='PLASMA'; document.querySelector('[data-table-filter]').dispatchEvent(new Event('input'));">Plasma</button>
+    </div>
+  </div>
+
+  <!-- Server Query Form -->
+  <form method="GET" action="{{ url_for('inventory.stock') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem;">
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Filter: Blood Group</label>
+      <select name="blood_group" class="form-select">
+        <option value="">All Groups</option>
+        {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+          <option value="{{ bg }}" {% if selected_bg == bg %}selected{% endif %}>{{ bg }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 160px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Filter: Component</label>
+      <select name="component_type" class="form-select">
+        <option value="">All Components</option>
+        <option value="WHOLE_BLOOD" {% if selected_comp == 'WHOLE_BLOOD' %}selected{% endif %}>Whole Blood (35d)</option>
+        <option value="RBC" {% if selected_comp == 'RBC' %}selected{% endif %}>RBC (42d)</option>
+        <option value="PLATELETS" {% if selected_comp == 'PLATELETS' %}selected{% endif %}>Platelets (5d)</option>
+        <option value="PLASMA" {% if selected_comp == 'PLASMA' %}selected{% endif %}>Plasma (365d)</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label" style="font-size: 0.8rem;">Database Filter: Status</label>
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="AVAILABLE" {% if selected_st == 'AVAILABLE' %}selected{% endif %}>Available</option>
+        <option value="RESERVED" {% if selected_st == 'RESERVED' %}selected{% endif %}>Reserved</option>
+        <option value="TRANSFUSED" {% if selected_st == 'TRANSFUSED' %}selected{% endif %}>Transfused</option>
+        <option value="EXPIRED" {% if selected_st == 'EXPIRED' %}selected{% endif %}>Expired</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-outline" style="height: 40px;">Run Query</button>
+      <a href="{{ url_for('inventory.stock') }}" class="btn btn-sm" style="color: var(--text-muted);">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Detailed Blood Units Table -->
+<div class="glass-card">
+  <div class="table-responsive">
+    <table id="inventory-units-table" class="custom-table">
+      <thead>
+        <tr>
+          <th>Unit ID</th>
+          <th>Group</th>
+          <th>Component</th>
+          <th>Source Donor</th>
+          <th>Collection Date</th>
+          <th>Expiration Date</th>
+          <th>Days Remaining</th>
+          <th>Storage Bay</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if units %}
+          {% for u in units %}
+            <tr>
+              <td><strong>#{{ u.unit_id }}</strong></td>
+              <td>
+                <span class="badge" style="background: rgba(225,29,72,0.15); color: #fda4af;">{{ u.blood_group }}</span>
+              </td>
+              <td>{{ u.component_type }}</td>
+              <td>
+                <a href="{{ url_for('donors.profile', donor_id=u.donor_id) }}" style="color: #cbd5e1;">
+                  {{ u.donor_name }}
+                </a>
+              </td>
+              <td>{{ u.collection_date|format_date }}</td>
+              <td>{{ u.expiration_date|format_date }}</td>
+              <td>
+                {% if u.days_remaining < 0 %}
+                  <span style="color: #f87171; font-weight:700;">Expired ({{ u.days_remaining }}d)</span>
+                {% elif u.days_remaining <= 7 %}
+                  <span style="color: #fbbf24; font-weight:700;">{{ u.days_remaining }} days</span>
+                {% else %}
+                  <span style="color: #34d399;">{{ u.days_remaining }} days</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.85rem; color: var(--text-secondary);">{{ u.storage_location }}</td>
+              <td>
+                {% if u.status == 'AVAILABLE' %}
+                  <span class="badge badge-eligible">Available</span>
+                {% elif u.status == 'RESERVED' %}
+                  <span class="badge badge-deferred">Reserved</span>
+                {% elif u.status == 'TRANSFUSED' %}
+                  <span class="badge badge-active">Transfused</span>
+                {% else %}
+                  <span class="badge badge-ineligible">Expired</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No units matching query criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

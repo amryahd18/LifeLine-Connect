@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Live Database Explorer & SQL Studio | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header" style="align-items: flex-start;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <h1 class="page-title" style="margin: 0;">🗄️ Database Explorer & Schema Studio</h1>
+      <span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); font-size: 0.8rem;">
+        Oracle 21c + MongoDB 8.0
+      </span>
+    </div>
+    <p class="page-subtitle">
+      Inspect live Oracle relational tables, schema metadata, compiled triggers/packages, and execute read-only SQL queries.
+    </p>
+  </div>
+
+  <!-- Connection Status Badge -->
+  <div class="glass-card" style="padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1.25rem;">
+    <div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Oracle Engine</div>
+      <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">21c Express Edition</div>
+    </div>
+    <div style="width: 1px; height: 30px; background: var(--border-subtle);"></div>
+    <div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Schema / PDB</div>
+      <div style="font-weight: 700; color: #38bdf8; font-size: 0.9rem;">LIFELINE_USER @ XEPDB1</div>
+    </div>
+    <div style="width: 1px; height: 30px; background: var(--border-subtle);"></div>
+    <div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Pool Status</div>
+      <div style="font-weight: 700; color: #34d399; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+        <span class="pulse-dot" style="width: 8px; height: 8px;"></span> ACTIVE
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem; flex-wrap: wrap;">
+  <button type="button" class="btn btn-sm btn-primary tab-btn active" onclick="switchDbTab('tables')">
+    🏛️ Oracle Tables ({{ tables_list|length }})
+  </button>
+  <button type="button" class="btn btn-sm btn-outline tab-btn" onclick="switchDbTab('console')">
+    💻 Interactive SQL Console
+  </button>
+  <button type="button" class="btn btn-sm btn-outline tab-btn" onclick="switchDbTab('mongo')">
+    🍃 MongoDB Collections ({{ mongo_collections|length }})
+  </button>
+  <button type="button" class="btn btn-sm btn-outline tab-btn" onclick="switchDbTab('desktop')">
+    🖥️ Desktop Client Guide (sqlplus / DBeaver)
+  </button>
+</div>
+
+<!-- =========================================================================
+     TAB 1: ORACLE RELATIONAL TABLES EXPLORER
+     ========================================================================= -->
+<div id="tab-tables" class="db-tab-content">
+  <div style="display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; align-items: start;">
+    <!-- Left Sidebar: Tables List -->
+    <div class="glass-card" style="padding: 1rem;">
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 0.75rem;">
+        Oracle 21c Tables ({{ tables_list|length }})
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        {% for tbl in tables_list %}
+          <a href="{{ url_for('database.index', table=tbl.name) }}"
+             style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: all 0.15s ease; {% if tbl.name == selected_table %}background: rgba(225,29,72,0.15); color: #fff; border: 1px solid rgba(225,29,72,0.4);{% else %}color: var(--text-secondary); background: rgba(255,255,255,0.02);{% endif %}">
+            <span>{{ tbl.name }}</span>
+            <span class="badge" style="font-size: 0.7rem; background: rgba(255,255,255,0.06); color: var(--text-muted);">
+              {{ tbl.count }} rows
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right Main Panel: Table Details & Data -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Table Header Card -->
+      <div class="glass-card" style="padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <h2 style="margin: 0; font-size: 1.35rem; font-family: monospace; color: #38bdf8;">{{ selected_table }}</h2>
+            <span class="badge" style="background: rgba(16,185,129,0.15); color: #34d399; font-size: 0.75rem;">
+              {{ rows|length }} Loaded (FETCH FIRST 50)
+            </span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Target Schema: <code>LIFELINE_USER.{{ selected_table }}</code>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-outline" onclick="loadSampleQuery('SELECT * FROM {{ selected_table }}')">
+          🔍 Query in SQL Console
+        </button>
+      </div>
+
+      <!-- Columns Schema View -->
+      <div class="glass-card" style="padding: 1.25rem;">
+        <h3 style="font-size: 0.95rem; margin-bottom: 0.85rem; color: #fff;">
+          📋 Column Metadata ({{ columns|length }} Columns)
+        </h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          {% for col in columns %}
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 0.4rem 0.65rem; border-radius: 6px; font-size: 0.78rem;">
+              <div style="font-family: monospace; font-weight: 700; color: {% if col.is_pk %}#fbbf24{% else %}#fff{% endif %};">
+                {% if col.is_pk %}🔑 {% endif %}{{ col.name }}
+              </div>
+              <div style="color: var(--text-muted); font-size: 0.7rem; margin-top: 0.15rem;">
+                {{ col.type }}{% if col.length and col.type in ['VARCHAR2', 'CHAR', 'RAW'] %}({{ col.length }}){% endif %}
+                • {% if col.nullable %}Null{% else %}<strong style="color:#f87171;">Not Null</strong>{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Live Rows Table -->
+      <div class="glass-card" style="padding: 1.25rem;">
+        <h3 style="font-size: 0.95rem; margin-bottom: 0.85rem; color: #fff;">
+          📊 Live Oracle Table Data ({{ rows|length }} Rows)
+        </h3>
+        {% if rows %}
+          <div style="overflow-x: auto; max-height: 480px;">
+            <table class="data-table" style="font-size: 0.82rem;">
+              <thead>
+                <tr>
+                  {% for col in columns %}
+                    <th style="white-space: nowrap; font-family: monospace;">{{ col.name }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in rows %}
+                  <tr>
+                    {% for col in columns %}
+                      <td style="white-space: nowrap; font-family: monospace; color: {% if r[col.name.lower()] == 'NULL' %}var(--text-muted){% else %}#fff{% endif %};">
+                        {{ r[col.name.lower()] }}
+                      </td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            No records found in table {{ selected_table }}.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 2: INTERACTIVE READ-ONLY SQL CONSOLE
+     ========================================================================= -->
+<div id="tab-console" class="db-tab-content" style="display: none;">
+  <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <h3 style="margin: 0; font-size: 1.1rem; color: #38bdf8;">
+        💻 Live Oracle SQL Query Console (SELECT only)
+      </h3>
+      <div style="font-size: 0.78rem; color: var(--text-muted);">
+        Connected to <strong>XEPDB1</strong> via Oracle Thin Driver
+      </div>
+    </div>
+
+    <!-- Quick Query Chips -->
+    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.85rem;">
+      <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Samples:</span>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM DONORS WHERE BLOOD_GROUP = \'O+\'')">
+        O+ Donors
+      </button>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM BLOOD_INVENTORY WHERE STATUS = \'AVAILABLE\' ORDER BY EXPIRATION_DATE ASC')">
+        Available FEFO Units
+      </button>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT h.hospital_name, r.blood_group, r.urgency_level, r.units_requested FROM BLOOD_REQUESTS r JOIN HOSPITALS h ON r.hospital_id = h.hospital_id')">
+        Hospital Demands Join
+      </button>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM AUDIT_DISPATCH_LOG ORDER BY log_id DESC')">
+        Audit Trigger Logs
+      </button>
+    </div>
+
+    <!-- SQL Editor -->
+    <div style="position: relative;">
+      <textarea id="sql-input" class="form-control" rows="4" style="font-family: monospace; font-size: 0.95rem; background: rgba(7, 11, 20, 0.95); border: 1px solid rgba(56,189,248,0.3); line-height: 1.5;" placeholder="Enter Oracle SQL SELECT query (e.g. SELECT * FROM DONORS)...">SELECT * FROM DONORS</textarea>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+      <div id="query-status-msg" style="font-size: 0.85rem; color: var(--text-muted);">
+        Ready to execute query.
+      </div>
+      <button type="button" id="btn-run-query" class="btn btn-primary" onclick="runCustomQuery()">
+        ⚡ Execute Query
+      </button>
+    </div>
+  </div>
+
+  <!-- Dynamic Results Grid -->
+  <div id="query-results-card" class="glass-card" style="padding: 1.25rem; display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+      <h3 style="font-size: 0.95rem; color: #fff; margin: 0;">Query Results</h3>
+      <span id="results-count-badge" class="badge" style="background: rgba(16,185,129,0.15); color: #34d399;">
+        0 Rows
+      </span>
+    </div>
+    <div id="query-table-wrap" style="overflow-x: auto; max-height: 500px;">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 3: MONGODB COLLECTIONS & DOCUMENTS
+     ========================================================================= -->
+<div id="tab-mongo" class="db-tab-content" style="display: none;">
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for mcol in mongo_collections %}
+      <div class="glass-card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <h3 style="margin: 0; font-family: monospace; color: #34d399; font-size: 1.15rem;">
+              lifeline_connect.{{ mcol.name }}
+            </h3>
+            <span class="badge" style="background: rgba(52,211,153,0.15); color: #34d399; font-size: 0.75rem;">
+              {{ mcol.count }} Documents
+            </span>
+          </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Sample Document Previews:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% for doc in mcol.sample %}
+            <pre style="background: rgba(7, 11, 20, 0.9); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 8px; font-family: monospace; font-size: 0.78rem; color: #e2e8f0; overflow-x: auto; max-height: 250px; margin: 0;"><code>{{ doc | tojson(indent=2) }}</code></pre>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- =========================================================================
+     TAB 4: DESKTOP CLIENT CONNECT GUIDE
+     ========================================================================= -->
+<div id="tab-desktop" class="db-tab-content" style="display: none;">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem;">
+    <!-- SQL*Plus CLI -->
+    <div class="glass-card" style="padding: 1.5rem;">
+      <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.75rem;">
+        📟 Connect via SQL*Plus (Terminal)
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+        You can connect immediately using the installed Oracle SQL*Plus command line utility on this machine:
+      </p>
+      <div style="background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #38bdf8; margin: 0.85rem 0; border: 1px solid var(--border-subtle);">
+        sqlplus lifeline_user/Lifeline123#@localhost:1521/XEPDB1
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">
+        Run this command in any Command Prompt or PowerShell terminal.
+      </p>
+    </div>
+
+    <!-- Oracle SQL Developer & DBeaver GUI -->
+    <div class="glass-card" style="padding: 1.5rem;">
+      <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.75rem;">
+        🖥️ Oracle SQL Developer / DBeaver GUI
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+        Use these exact connection settings in your desktop client:
+      </p>
+      <table style="width: 100%; font-size: 0.82rem; color: #fff; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Connection Type</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600;">Basic (TNS)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Hostname</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600;">localhost</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Port</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600;">1521</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Service Name</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600; color: #38bdf8;">XEPDB1</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border-subtle);">
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Username</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600;">lifeline_user</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--text-muted);">Password</td>
+          <td style="padding: 0.4rem 0; font-family: monospace; font-weight: 600;">Lifeline123#</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- MongoDB Compass -->
+    <div class="glass-card" style="padding: 1.5rem;">
+      <h3 style="font-size: 1.1rem; color: #34d399; margin-bottom: 0.75rem;">
+        🍃 MongoDB Compass Connection
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+        To explore unstructured campaigns, ratings, and emergency appeals via MongoDB Compass GUI:
+      </p>
+      <div style="background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #34d399; margin: 0.85rem 0; border: 1px solid var(--border-subtle);">
+        mongodb://localhost:27017/lifeline_connect
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">
+        Port: 27017 | Database: <code>lifeline_connect</code>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchDbTab(tabName) {
+  document.querySelectorAll('.db-tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-outline');
+  });
+
+  const targetTab = document.getElementById('tab-' + tabName);
+  if (targetTab) targetTab.style.display = 'block';
+
+  // Highlight button
+  event.currentTarget.classList.remove('btn-outline');
+  event.currentTarget.classList.add('btn-primary');
+}
+
+function loadSampleQuery(sql) {
+  switchDbTab('console');
+  // Find console tab button
+  const buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach(b => {
+    if (b.innerText.includes('Interactive SQL')) {
+      b.classList.remove('btn-outline');
+      b.classList.add('btn-primary');
+    } else {
+      b.classList.remove('btn-primary');
+      b.classList.add('btn-outline');
+    }
+  });
+  document.getElementById('sql-input').value = sql;
+  runCustomQuery();
+}
+
+function runCustomQuery() {
+  const sql = document.getElementById('sql-input').value.trim();
+  const statusMsg = document.getElementById('query-status-msg');
+  const resultsCard = document.getElementById('query-results-card');
+  const tableWrap = document.getElementById('query-table-wrap');
+  const countBadge = document.getElementById('results-count-badge');
+  const btn = document.getElementById('btn-run-query');
+
+  if (!sql) return;
+
+  btn.disabled = true;
+  btn.innerText = "Executing...";
+  statusMsg.innerHTML = "Query running against Oracle 21c...";
+  statusMsg.style.color = "var(--text-muted)";
+
+  fetch('/database/api/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sql: sql })
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = "⚡ Execute Query";
+
+    if (!data.success) {
+      statusMsg.innerHTML = `⚠️ <strong style="color: #f87171;">Query Error:</strong> ${data.error}`;
+      resultsCard.style.display = 'none';
+      return;
+    }
+
+    statusMsg.innerHTML = `✅ Successfully returned <strong>${data.count}</strong> rows from Oracle 21c.`;
+    statusMsg.style.color = "#34d399";
+    countBadge.innerText = `${data.count} Rows`;
+    resultsCard.style.display = 'block';
+
+    if (data.rows.length === 0) {
+      tableWrap.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">Query executed successfully with 0 rows returned.</div>';
+      return;
+    }
+
+    let html = '<table class="data-table" style="font-size: 0.82rem;"><thead><tr>';
+    data.columns.forEach(col => {
+      html += `<th style="white-space: nowrap; font-family: monospace;">${col}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    data.rows.forEach(row => {
+      html += '<tr>';
+      row.forEach(val => {
+        const color = val === 'NULL' ? 'var(--text-muted)' : '#fff';
+        html += `<td style="white-space: nowrap; font-family: monospace; color: ${color};">${val}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    tableWrap.innerHTML = html;
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerText = "⚡ Execute Query";
+    statusMsg.innerHTML = `⚠️ Communication Error: ${err}`;
+    resultsCard.style.display = 'none';
+  });
+}
+</script>
+{% endblock %}

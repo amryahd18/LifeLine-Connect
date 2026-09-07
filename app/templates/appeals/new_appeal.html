@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Broadcast Emergency Appeal | LifeLine Connect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🚨 Broadcast Emergency Blood Appeal</h1>
+    <p class="page-subtitle">Pushes real-time crowd appeal into MongoDB 8.0 and triggers multichannel alerts</p>
+  </div>
+  <a href="{{ url_for('appeals.index') }}" class="btn btn-outline">&larr; Back to Appeals</a>
+</div>
+
+<div class="glass-card" style="max-width: 750px; margin: 0 auto; border-top: 4px solid var(--crimson-500);">
+  <form method="POST" action="{{ url_for('appeals.new_appeal') }}">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Hospital / Treatment Facility *</label>
+        <input type="text" name="hospital_name" class="form-control" required placeholder="e.g. National Hospital of Sri Lanka (NHSL)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">City / Region *</label>
+        <input type="text" name="city" class="form-control" required placeholder="e.g. Colombo 10">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Blood Group Needed *</label>
+        <select name="blood_group" class="form-select" required>
+          {% for bg in ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'] %}
+            <option value="{{ bg }}">{{ bg }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Urgency Level *</label>
+        <select name="urgency" class="form-select" required>
+          <option value="CRITICAL">🚨 Critical Emergency (Immediate)</option>
+          <option value="URGENT">⚠️ Urgent (Within 24 hours)</option>
+          <option value="NORMAL">Standard Appeal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Units Urgently Required *</label>
+        <input type="number" name="units_required" class="form-control" required value="3" min="1" max="20">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Emergency Contact Phone *</label>
+        <input type="text" name="contact_phone" class="form-control" required value="+94-11-269-1111">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Patient Clinical Condition &amp; Trauma Indication *</label>
+      <textarea name="patient_condition" rows="3" class="form-control" required placeholder="State patient age/gender (anonymized), trauma or clinical case, and intake gate details..."></textarea>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+      <a href="{{ url_for('appeals.index') }}" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, var(--crimson-500), #9f1239);">
+        Broadcast Emergency Appeal
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

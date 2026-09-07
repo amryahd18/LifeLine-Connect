@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}{{ camp.camp_name }} | Camp Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ camp.camp_name }}</h1>
+    <p class="page-subtitle">Organized by {{ camp.organizer_name }} &bull; {{ camp.city }}</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('camps.index') }}" class="btn btn-outline">&larr; Back to Camps</a>
+    <a href="#feedback-section" class="btn btn-primary">⭐ Leave Donor Review</a>
+  </div>
+</div>
+
+<!-- Camp Overview Split -->
+<div class="grid-cols-3">
+  <!-- Venue & Schedule (Oracle) -->
+  <div class="glass-card" style="grid-column: span 2;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.15rem;">Venue &amp; Schedule Overview (Oracle DB)</h3>
+      {% if camp.status == 'ACTIVE' %}
+        <span class="badge badge-active">Active Drive</span>
+      {% elif camp.status == 'UPCOMING' %}
+        <span class="badge badge-deferred">Upcoming</span>
+      {% else %}
+        <span class="badge badge-completed">Completed</span>
+      {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem;">
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.8rem; display:block;">VENUE LOCATION</span>
+        <strong>{{ camp.venue_address }}, {{ camp.city }}</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.8rem; display:block;">DATES SCHEDULED</span>
+        <strong>{{ camp.start_date|format_date }} &ndash; {{ camp.end_date|format_date }}</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.8rem; display:block;">TARGET UNITS</span>
+        <strong style="color: #38bdf8;">{{ camp.target_units }} Units</strong>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-size: 0.8rem; display:block;">TOTAL COLLECTED</span>
+        <strong style="color: var(--crimson-500);">{{ camp.units_collected }} Units ({{ camp.total_donations }} Donors)</strong>
+      </div>
+    </div>
+
+    <!-- Assigned Medical Staff Table (Oracle) -->
+    <h4 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+      Assigned Medical Staff &amp; Volunteers (Oracle DB)
+    </h4>
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Staff Name</th>
+            <th>Role Assigned</th>
+            <th>Shift Date</th>
+            <th>Hours</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if staff %}
+            {% for s in staff %}
+              <tr>
+                <td><strong>{{ s.staff_name }}</strong></td>
+                <td><span class="badge" style="background: rgba(14,165,233,0.15); color: #7dd3fc;">{{ s.role_assigned }}</span></td>
+                <td>{{ s.shift_date|format_date }}</td>
+                <td>{{ s.hours_worked }} hrs</td>
+                <td><span class="badge badge-eligible">{{ s.shift_status }}</span></td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5" style="color: var(--text-muted);">No staff assigned yet.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Campaign Media & Guidelines (MongoDB) -->
+  <div class="glass-card">
+    <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Campaign Guidelines (MongoDB)</h3>
+    {% if media %}
+      {% for m in media %}
+        <div style="background: rgba(13, 21, 39, 0.85); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border-subtle);">
+          <span class="badge" style="background: rgba(168,85,247,0.15); color: #d8b4fe; margin-bottom: 0.5rem;">
+            {{ m.media_type }}
+          </span>
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 0.3rem;">{{ m.title }}</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.6rem;">{{ m.campaign_theme }}</p>
+          
+          {% if m.guidelines %}
+            <div style="font-size: 0.8rem; color: #cbd5e1;">
+              <strong>Pre-donation tips:</strong>
+              <ul style="padding-left: 1.2rem; margin-top: 0.3rem; line-height: 1.5;">
+                {% for tip in m.guidelines.get('pre_donation_instructions', []) %}
+                  <li>{{ tip }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: var(--text-muted); font-size: 0.9rem;">No campaign promotional media uploaded for this camp.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Donor Feedback & Reviews Section (MongoDB) -->
+<div id="feedback-section" class="grid-cols-2" style="margin-top: 2rem;">
+  <!-- Review List -->
+  <div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.15rem;">Donor Reviews &amp; Ratings (MongoDB)</h3>
+      {% if avg_score > 0 %}
+        <span style="font-size: 1.15rem; font-weight: 800; color: #f59e0b;">★ {{ avg_score }} / 5.0</span>
+      {% endif %}
+    </div>
+
+    {% if feedback %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for f in feedback %}
+          <div style="background: rgba(13, 21, 39, 0.85); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <div>
+                <strong style="color: #fff;">{{ f.donor_name }}</strong>
+                <span class="badge" style="margin-left: 0.4rem; background: rgba(225,29,72,0.15); color: #fda4af;">{{ f.blood_group }}</span>
+              </div>
+              <span style="color: #f59e0b; font-weight: 700;">★ {{ f.ratings.overall_score }}/5.0</span>
+            </div>
+
+            <p style="font-size: 0.88rem; color: #e2e8f0; margin-bottom: 0.5rem;">"{{ f.feedback_text }}"</p>
+
+            <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-muted);">
+              <span>Registration: {{ f.ratings.registration_speed }}★</span>
+              <span>Staff: {{ f.ratings.staff_friendliness }}★</span>
+              <span>Hygiene: {{ f.ratings.hygiene_and_safety }}★</span>
+              <span>Snacks: {{ f.ratings.refreshment_quality }}★</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted);">No reviews submitted for this camp yet. Be the first!</p>
+    {% endif %}
+  </div>
+
+  <!-- Submit Feedback Form (Writes to MongoDB) -->
+  <div class="glass-card">
+    <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Submit Camp Feedback (MongoDB)</h3>
+    <form method="POST" action="{{ url_for('camps.submit_feedback', camp_id=camp.camp_id) }}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" name="donor_name" class="form-control" required placeholder="e.g. Sarah Jenkins">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Blood Group</label>
+          <select name="blood_group" class="form-select">
+            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+              <option value="{{ bg }}">{{ bg }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Overall Score (1 - 5)</label>
+          <select name="overall_score" class="form-select">
+            <option value="5">5 - Outstanding</option>
+            <option value="4">4 - Very Good</option>
+            <option value="3">3 - Average</option>
+            <option value="2">2 - Needs Improvement</option>
+            <option value="1">1 - Poor</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Staff Friendliness (1 - 5)</label>
+          <select name="staff_friendliness" class="form-select">
+            <option value="5">5 - Highly Professional</option>
+            <option value="4">4 - Helpful</option>
+            <option value="3">3 - Neutral</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Open-ended Donor Review</label>
+        <textarea name="feedback_text" rows="3" class="form-control" required placeholder="Describe your experience with registration, waiting time, needle insertion, and refreshments..."></textarea>
+      </div>
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" name="recommend_to_others" id="rec" checked>
+        <label for="rec" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+          I would recommend this blood drive venue to friends and colleagues
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        Submit Review to MongoDB
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
