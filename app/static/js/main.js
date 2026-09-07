@@ -550,5 +550,105 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   });
+
+  // ==========================================================================
+  // 12. LIVE TELEMETRY CLOCK, DUAL-PERSONA SWITCHER & HOTKEYS
+  // ==========================================================================
+
+  // Live Telemetry Ribbon Clock (Sri Lanka UTC+5:30)
+  const hudClock = document.getElementById("live-hud-clock");
+  function updateHudClock() {
+    if (!hudClock) return;
+    try {
+      const now = new Date();
+      const options = { timeZone: "Asia/Colombo", hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" };
+      hudClock.textContent = new Intl.DateTimeFormat("en-GB", options).format(now) + " IST";
+    } catch (e) {
+      hudClock.textContent = new Date().toLocaleTimeString();
+    }
+  }
+  updateHudClock();
+  setInterval(updateHudClock, 1000);
+
+  // Dual-Persona Switcher (Admin HUD vs Donor View)
+  const btnAdmin = document.getElementById("btn-mode-admin");
+  const btnDonor = document.getElementById("btn-mode-donor");
+  const savedPersona = localStorage.getItem("lifeline_persona") || "admin";
+
+  function setPersona(persona) {
+    document.body.setAttribute("data-persona", persona);
+    localStorage.setItem("lifeline_persona", persona);
+    if (btnAdmin && btnDonor) {
+      if (persona === "admin") {
+        btnAdmin.classList.add("active");
+        btnDonor.classList.remove("active", "donor-mode");
+      } else {
+        btnDonor.classList.add("active", "donor-mode");
+        btnAdmin.classList.remove("active");
+      }
+    }
+  }
+
+  setPersona(savedPersona);
+
+  if (btnAdmin) {
+    btnAdmin.addEventListener("click", function () {
+      playSoftClick();
+      setPersona("admin");
+    });
+  }
+  if (btnDonor) {
+    btnDonor.addEventListener("click", function () {
+      playSoftClick();
+      setPersona("donor");
+    });
+  }
+
+  // Number Counter Animation for KPI Cards
+  document.querySelectorAll(".counter-anim").forEach(function (counter) {
+    const target = parseInt(counter.getAttribute("data-count") || counter.textContent.trim(), 10);
+    if (isNaN(target)) return;
+    let current = 0;
+    const duration = 1000; // ms
+    const stepTime = 20;
+    const totalSteps = duration / stepTime;
+    const increment = Math.max(1, target / totalSteps);
+
+    const timer = setInterval(function () {
+      current += increment;
+      if (current >= target) {
+        counter.textContent = target;
+        clearInterval(timer);
+      } else {
+        counter.textContent = Math.floor(current);
+      }
+    }, stepTime);
+  });
+
+  // Global Operational Keyboard Shortcuts (When not typing in inputs)
+  document.addEventListener("keydown", function (e) {
+    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+    if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    const key = e.key.toUpperCase();
+    if (key === "I") {
+      playSoftClick();
+      window.location.href = "/inventory/donate";
+    } else if (key === "D") {
+      playSoftClick();
+      window.location.href = "/hospitals/requests";
+    } else if (key === "A") {
+      playSoftClick();
+      window.location.href = "/appeals/new";
+    } else if (key === "R") {
+      playSoftClick();
+      window.location.href = "/logistics/";
+    } else if (key === "S") {
+      playSoftClick();
+      window.location.href = "/database/";
+    }
+  });
 });
+
 

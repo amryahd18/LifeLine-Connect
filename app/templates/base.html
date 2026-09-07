@@ -7,7 +7,44 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e11d48'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>">
 </head>
-<body>
+<body data-persona="admin">
+
+  <!-- Top Live Telemetry Ribbon -->
+  <div class="telemetry-ribbon" id="telemetry-ribbon">
+    <div class="telemetry-group">
+      <span class="telemetry-item">
+        <span class="telemetry-dot dot-green"></span>
+        <span>ORACLE 21c (XEPDB1): ACTIVE</span>
+      </span>
+      <span class="telemetry-item">
+        <span class="telemetry-dot dot-cyan"></span>
+        <span>MONGODB 8.0: SYNCED</span>
+      </span>
+      <span class="telemetry-item">
+        <span class="telemetry-dot dot-orange"></span>
+        <span>CRYO COLD-CHAIN: 3.8°C [NOMINAL]</span>
+      </span>
+    </div>
+
+    <div class="telemetry-group">
+      <span class="telemetry-item">
+        <span>🇱🇰 COLOMBO:</span>
+        <span id="live-hud-clock" style="color:#fff; font-weight:700;">--:--:--</span>
+      </span>
+
+      <!-- Dual-Persona HUD Switcher -->
+      <div class="persona-switch-bar">
+        <button type="button" class="persona-btn active" id="btn-mode-admin" title="Switch to Full Clinical & Administrative HUD">
+          <span>👨‍⚕️</span>
+          <span>Admin HUD</span>
+        </button>
+        <button type="button" class="persona-btn" id="btn-mode-donor" title="Switch to Streamlined Donor Experience">
+          <span>🩸</span>
+          <span>Donor View</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Navigation Bar (Enterprise Organized Command Bar) -->
   <nav class="navbar" id="app-navbar">

@@ -14,13 +14,108 @@
   </div>
 </div>
 
-<!-- Telemetry Metric Cards -->
+<!-- 1-Click Operations Command Deck -->
+<div class="ops-deck admin-only-feature">
+  <a href="{{ url_for('inventory.donate') }}" class="op-card" title="Press 'I' for Fast Intake">
+    <div class="op-icon-box" style="color: #fb7185; background: rgba(225,29,72,0.15);">💉</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Rapid Intake</div>
+      <div class="op-desc">Clinical Donor Screening</div>
+    </div>
+    <kbd class="op-kbd">I</kbd>
+  </a>
+
+  <a href="{{ url_for('hospitals.requests') }}" class="op-card" title="Press 'D' for FEFO Dispatch">
+    <div class="op-icon-box" style="color: #34d399; background: rgba(16,185,129,0.15);">⚡</div>
+    <div class="op-info-wrap">
+      <div class="op-title">FEFO Dispatch</div>
+      <div class="op-desc">Auto-Allocate Oldest Unit</div>
+    </div>
+    <kbd class="op-kbd">D</kbd>
+  </a>
+
+  <a href="{{ url_for('appeals.new_appeal') }}" class="op-card" title="Press 'A' for Emergency Broadcast">
+    <div class="op-icon-box" style="color: #f87171; background: rgba(239,68,68,0.15);">🚨</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Broadcast Alert</div>
+      <div class="op-desc">MongoDB Appeal Notice</div>
+    </div>
+    <kbd class="op-kbd">A</kbd>
+  </a>
+
+  <a href="{{ url_for('logistics.index') }}" class="op-card" title="Press 'R' for Logistics Radar">
+    <div class="op-icon-box" style="color: #38bdf8; background: rgba(56,189,248,0.15);">🗺️</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Logistics Radar</div>
+      <div class="op-desc">Sri Lanka Cold-Chain Map</div>
+    </div>
+    <kbd class="op-kbd">R</kbd>
+  </a>
+
+  <a href="{{ url_for('database.index') }}" class="op-card" title="Press 'S' for SQL Studio">
+    <div class="op-icon-box" style="color: #c084fc; background: rgba(192,132,252,0.15);">🗄️</div>
+    <div class="op-info-wrap">
+      <div class="op-title">SQL Studio</div>
+      <div class="op-desc">Oracle 21c Web Terminal</div>
+    </div>
+    <kbd class="op-kbd">S</kbd>
+  </a>
+</div>
+
+<!-- Streamlined Donor View Action Deck (Shown in Donor Mode) -->
+<div class="ops-deck donor-only-feature" style="display: none;">
+  <a href="{{ url_for('camps.index') }}" class="op-card">
+    <div class="op-icon-box" style="color: #38bdf8; background: rgba(56,189,248,0.15);">⛺</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Find Nearby Camps</div>
+      <div class="op-desc">Book mobile blood donation drive</div>
+    </div>
+    <span class="badge" style="background: rgba(14,165,233,0.2); color: #7dd3fc;">Explore</span>
+  </a>
+
+  <a href="#interactive-compat-matrix" class="op-card">
+    <div class="op-icon-box" style="color: #fb7185; background: rgba(225,29,72,0.15);">🧬</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Compatibility Matcher</div>
+      <div class="op-desc">Check who you can safely save</div>
+    </div>
+    <span class="badge" style="background: rgba(225,29,72,0.2); color: #fda4af;">Calculate</span>
+  </a>
+
+  <a href="{{ url_for('donors.profile', donor_id=1001) }}" class="op-card">
+    <div class="op-icon-box" style="color: #fbbf24; background: rgba(245,158,11,0.15);">🪪</div>
+    <div class="op-info-wrap">
+      <div class="op-title">Digital Donor Pass</div>
+      <div class="op-desc">QR holographic ID & badges</div>
+    </div>
+    <span class="badge" style="background: rgba(245,158,11,0.2); color: #fde68a;">Wallet</span>
+  </a>
+</div>
+
+<!-- Live Clinical Event Stream Ticker -->
+<div class="event-ticker-card">
+  <div class="ticker-badge">
+    <span class="telemetry-dot dot-crimson" style="width:5px; height:5px;"></span>
+    <span>LIVE STREAM</span>
+  </div>
+  <div class="ticker-viewport">
+    <div class="ticker-content" id="live-ticker-content">
+      <div class="ticker-item-live"><span>🩸</span> <strong>Donor Kasun Fernando (O-)</strong> completed donation at Viharamahadevi Park</div>
+      <div class="ticker-item-live"><span>🚚</span> <strong>Cold-Chain Van #NBTS-4091</strong> departed Colombo Cryo Hub (Cargo: 4.1°C)</div>
+      <div class="ticker-item-live"><span>🏥</span> <strong>NHSL Colombo</strong> STAT request fulfilled via Oracle FEFO algorithm</div>
+      <div class="ticker-item-live"><span>⚡</span> <strong>Oracle 21c Connection Pool</strong> synchronized across all 11 tables</div>
+      <div class="ticker-item-live"><span>🚨</span> <strong>Emergency Appeal APP-2026-001</strong> pledged by 3 active community donors</div>
+    </div>
+  </div>
+</div>
+
+<!-- Telemetry Metric Cards with Counter Animations -->
 <div class="grid-cols-4">
   <div class="glass-card stat-card">
     <div class="stat-icon crimson">🩸</div>
     <div>
       <div class="stat-label">Available Blood Units</div>
-      <div class="stat-value">{{ stats.available_units }}</div>
+      <div class="stat-value counter-anim" data-count="{{ stats.available_units }}">{{ stats.available_units }}</div>
     </div>
   </div>
 
@@ -28,7 +123,7 @@
     <div class="stat-icon emerald">👥</div>
     <div>
       <div class="stat-label">Registered Donors</div>
-      <div class="stat-value">{{ stats.total_donors }}</div>
+      <div class="stat-value counter-anim" data-count="{{ stats.total_donors }}">{{ stats.total_donors }}</div>
     </div>
   </div>
 
@@ -36,7 +131,7 @@
     <div class="stat-icon sky">⛺</div>
     <div>
       <div class="stat-label">Active Field Camps</div>
-      <div class="stat-value">{{ stats.active_camps }}</div>
+      <div class="stat-value counter-anim" data-count="{{ stats.active_camps }}">{{ stats.active_camps }}</div>
     </div>
   </div>
 
@@ -44,7 +139,86 @@
     <div class="stat-icon amber">🏥</div>
     <div>
       <div class="stat-label">Pending Hospital Requests</div>
-      <div class="stat-value">{{ stats.pending_requests }}</div>
+      <div class="stat-value counter-anim" data-count="{{ stats.pending_requests }}">{{ stats.pending_requests }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Real-Time Component Reserves SVG Dials Deck -->
+<div class="cryo-reserves-deck admin-only-feature">
+  <div class="cryo-deck-header">
+    <div>
+      <h3 style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>❄️</span> Live Cryogenic Component Reserves &amp; Thermal Compliance
+      </h3>
+      <span style="font-size: 0.76rem; color: var(--text-muted);">Real-time component distribution telemetry across NBTS cryogenic storage bays</span>
+    </div>
+    <a href="{{ url_for('inventory.stock') }}" class="btn btn-sm btn-outline">Full Inventory Matrix →</a>
+  </div>
+
+  <div class="cryo-grid">
+    <!-- Dial 1: RBC -->
+    <div class="dial-box">
+      <div class="dial-svg-wrap">
+        <svg viewBox="0 0 36 36">
+          <path class="dial-svg-bg" fill="none" stroke-width="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="dial-svg-val" fill="none" stroke="#e11d48" stroke-width="3.5" stroke-dasharray="78, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="dial-center-pct">78%</div>
+      </div>
+      <div class="dial-content">
+        <div class="dial-label">Bay A • 4.0°C</div>
+        <div class="dial-name">Red Blood Cells</div>
+        <div class="dial-metrics">42-Day Shelf Life • Optimal</div>
+      </div>
+    </div>
+
+    <!-- Dial 2: Platelets -->
+    <div class="dial-box">
+      <div class="dial-svg-wrap">
+        <svg viewBox="0 0 36 36">
+          <path class="dial-svg-bg" fill="none" stroke-width="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="dial-svg-val" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="62, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="dial-center-pct">62%</div>
+      </div>
+      <div class="dial-content">
+        <div class="dial-label">Bay B • 22.1°C</div>
+        <div class="dial-name">Platelets (PLT)</div>
+        <div class="dial-metrics">5-Day Shelf Life • Agitated</div>
+      </div>
+    </div>
+
+    <!-- Dial 3: Fresh Frozen Plasma -->
+    <div class="dial-box">
+      <div class="dial-svg-wrap">
+        <svg viewBox="0 0 36 36">
+          <path class="dial-svg-bg" fill="none" stroke-width="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="dial-svg-val" fill="none" stroke="#0ea5e9" stroke-width="3.5" stroke-dasharray="88, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="dial-center-pct">88%</div>
+      </div>
+      <div class="dial-content">
+        <div class="dial-label">Bay C • -21.4°C</div>
+        <div class="dial-name">Frozen Plasma</div>
+        <div class="dial-metrics">1-Year Shelf Life • Cryo Safe</div>
+      </div>
+    </div>
+
+    <!-- Dial 4: Whole Blood -->
+    <div class="dial-box">
+      <div class="dial-svg-wrap">
+        <svg viewBox="0 0 36 36">
+          <path class="dial-svg-bg" fill="none" stroke-width="3.5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="dial-svg-val" fill="none" stroke="#10b981" stroke-width="3.5" stroke-dasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <div class="dial-center-pct">70%</div>
+      </div>
+      <div class="dial-content">
+        <div class="dial-label">Bay D • 4.2°C</div>
+        <div class="dial-name">Whole Blood</div>
+        <div class="dial-metrics">35-Day Shelf Life • Nominal</div>
+      </div>
     </div>
   </div>
 </div>

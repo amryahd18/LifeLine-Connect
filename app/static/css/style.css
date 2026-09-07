@@ -4,15 +4,15 @@
    Typography: Outfit & Inter
    ============================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-primary: #070b14;
-  --bg-secondary: #0d1527;
-  --bg-card: rgba(17, 27, 49, 0.7);
-  --bg-card-hover: rgba(23, 37, 68, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(225, 29, 72, 0.5);
+  --bg-primary: #060911;
+  --bg-secondary: #0c1220;
+  --bg-card: rgba(14, 22, 40, 0.75);
+  --bg-card-hover: rgba(20, 32, 58, 0.9);
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-focus: rgba(225, 29, 72, 0.6);
 
   --crimson-500: #e11d48;
   --crimson-600: #be123c;
@@ -31,8 +31,9 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -1290,4 +1291,334 @@ a:hover {
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+/* ============================================================================
+   ULTRA-MODERN CYBER-CLINICAL HUD & TELEMETRY SYSTEM
+   ============================================================================ */
+
+/* Top Telemetry Status Ribbon */
+.telemetry-ribbon {
+  background: linear-gradient(90deg, #090e1a 0%, #0d1527 50%, #090e1a 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.35rem 1.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  z-index: 1001;
+  position: relative;
+}
+.telemetry-group {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  letter-spacing: 0.02em;
+}
+.telemetry-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulseGlow 2s infinite;
+}
+.dot-green { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.dot-cyan { background: #06b6d4; box-shadow: 0 0 8px #06b6d4; }
+.dot-orange { background: #f97316; box-shadow: 0 0 8px #f97316; }
+.dot-crimson { background: #e11d48; box-shadow: 0 0 8px #e11d48; }
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.65; }
+}
+
+/* Dual-Persona HUD Switcher */
+.persona-switch-bar {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 2px;
+  gap: 2px;
+}
+.persona-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.28rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.persona-btn:hover {
+  color: #fff;
+}
+.persona-btn.active {
+  background: linear-gradient(135deg, var(--crimson-600) 0%, var(--crimson-700) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.4);
+}
+.persona-btn.active.donor-mode {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.4);
+}
+
+/* Persona Conditional Display Classes */
+body[data-persona="donor"] .admin-only-feature {
+  display: none !important;
+}
+body[data-persona="donor"] .donor-only-feature {
+  display: block !important;
+}
+body[data-persona="admin"] .donor-only-feature {
+  display: none !important;
+}
+body[data-persona="admin"] .admin-only-feature {
+  display: block !important;
+}
+
+/* 1-Click Operations Command Deck */
+.ops-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+.op-card {
+  background: linear-gradient(145deg, rgba(17, 27, 49, 0.85) 0%, rgba(13, 21, 39, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-decoration: none;
+  color: #fff;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.op-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 3px; height: 100%;
+  background: var(--crimson-500);
+  opacity: 0.6;
+  transition: width 0.2s ease;
+}
+.op-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(225, 29, 72, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(225, 29, 72, 0.2);
+  color: #fff;
+}
+.op-card:hover::before {
+  width: 5px;
+}
+.op-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+.op-info-wrap {
+  flex: 1;
+}
+.op-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: -0.01em;
+}
+.op-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.op-kbd {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  color: var(--text-secondary);
+}
+
+/* Real-Time Component Reserves SVG Dials Grid */
+.cryo-reserves-deck {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.8) 0%, rgba(10, 16, 31, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-card);
+}
+.cryo-deck-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cryo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+.dial-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+.dial-box:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+}
+.dial-svg-wrap {
+  width: 68px;
+  height: 68px;
+  position: relative;
+  flex-shrink: 0;
+}
+.dial-svg-wrap svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+.dial-svg-bg {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+.dial-svg-val {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dial-center-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+.dial-content {
+  flex: 1;
+}
+.dial-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.dial-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 0.15rem;
+}
+.dial-metrics {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+/* Live Clinical Event Stream Ticker */
+.event-ticker-card {
+  background: rgba(10, 16, 31, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.25rem;
+  margin-bottom: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+}
+.ticker-badge {
+  background: rgba(225, 29, 72, 0.18);
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  color: #fda4af;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 24px;
+}
+.ticker-content {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  white-space: nowrap;
+  animation: scrollTicker 32s linear infinite;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.ticker-content:hover {
+  animation-play-state: paused;
+}
+.ticker-item-live {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ticker-item-live strong {
+  color: #f1f5f9;
+}
+
+@keyframes scrollTicker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Animated Number Glowing Effect */
+.stat-value.counter-anim {
+  display: inline-block;
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 
