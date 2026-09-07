@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeLine Connect - Interactive Entity-Relationship Diagram (ERD)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #060911;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #f1f5f9;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1440px;
+    width: 100%;
+    background: #0c1220;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 32px 40px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 30px rgba(225, 29, 72, 0.12);
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 20px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(225, 29, 72, 0.18);
+    color: #fda4af;
+    border: 1px solid rgba(225, 29, 72, 0.4);
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  h1 span { color: #e11d48; }
+  p.subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-top: 6px;
+  }
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    background: #e11d48;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s ease;
+  }
+  .btn:hover { background: #be123c; }
+  .btn-outline {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.1); }
+  .diagram-viewport {
+    background: #080d19;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 24px;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    min-height: 500px;
+  }
+  .mermaid {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .legend {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .legend-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .legend-item h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 4px;
+  }
+  .legend-item p {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+</style>
+<!-- Mermaid.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      darkMode: true,
+      background: '#080d19',
+      primaryColor: '#1e293b',
+      primaryTextColor: '#f8fafc',
+      primaryBorderColor: '#e11d48',
+      lineColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#1e293b',
+      attributeBackgroundColorOdd: '#0d1527',
+      attributeBackgroundColorEven: '#0a101f'
+    }
+  });
+</script>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="badge">Relational Schema &bull; Third Normal Form (3NF)</div>
+    <h1>LifeLine <span>Connect</span> &mdash; Entity-Relationship Diagram</h1>
+    <p class="subtitle">Complete Crow's Foot Schema for Oracle Database 21c (Relational) &amp; MongoDB 8.0 (Polyglot Documents)</p>
+  </div>
+
+  <div class="controls">
+    <div style="font-size: 13px; color: #94a3b8;">
+      Engine: <strong style="color:#fff;">Oracle 21c Enterprise Schema</strong> &bull; 9 Relational Entities &bull; 4 Document Collections
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <a href="ERD_Diagram.md" class="btn" style="text-decoration:none; display:inline-flex; align-items:center;">📄 Open ERD Spec (.md)</a>
+    </div>
+  </div>
+
+  <div class="diagram-viewport">
+    <pre class="mermaid">
+erDiagram
+    DONORS ||--o{ DONATION_RECORDS : "undergoes"
+    CAMPS ||--o{ DONATION_RECORDS : "hosts"
+    CAMPS ||--o{ STAFF_ASSIGNMENTS : "schedules"
+    STAFF ||--o{ STAFF_ASSIGNMENTS : "deployed to"
+    STAFF ||--o{ BLOOD_DISPATCHES : "authorizes"
+    DONATION_RECORDS ||--|| BLOOD_INVENTORY : "yields unit"
+    HOSPITALS ||--o{ BLOOD_REQUESTS : "issues order"
+    BLOOD_REQUESTS ||--o{ BLOOD_DISPATCHES : "fulfilled through"
+    BLOOD_INVENTORY ||--o| BLOOD_DISPATCHES : "allocated to"
+
+    DONORS {
+        NUMBER donor_id PK
+        VARCHAR2 first_name
+        VARCHAR2 last_name
+        VARCHAR2 email UK
+        VARCHAR2 phone
+        DATE date_of_birth
+        VARCHAR2 gender
+        VARCHAR2 blood_group
+        VARCHAR2 rh_factor
+        NUMBER weight_kg
+        NUMBER hemoglobin_level
+        VARCHAR2 eligibility_status
+        DATE last_donation_date
+        DATE next_eligible_date
+        VARCHAR2 address
+        VARCHAR2 city
+        TIMESTAMP created_at
+    }
+
+    CAMPS {
+        NUMBER camp_id PK
+        VARCHAR2 camp_name
+        VARCHAR2 organizer_name
+        VARCHAR2 venue_address
+        VARCHAR2 city
+        DATE start_date
+        DATE end_date
+        NUMBER target_units
+        VARCHAR2 status
+        TIMESTAMP created_at
+    }
+
+    STAFF {
+        NUMBER staff_id PK
+        VARCHAR2 first_name
+        VARCHAR2 last_name
+        VARCHAR2 role
+        VARCHAR2 email UK
+        VARCHAR2 phone
+        VARCHAR2 license_number
+        VARCHAR2 status
+        TIMESTAMP created_at
+    }
+
+    STAFF_ASSIGNMENTS {
+        NUMBER assignment_id PK
+        NUMBER camp_id FK
+        NUMBER staff_id FK
+        VARCHAR2 role_assigned
+        DATE shift_date
+        NUMBER hours_worked
+        VARCHAR2 status
+    }
+
+    DONATION_RECORDS {
+        NUMBER donation_id PK
+        NUMBER donor_id FK
+        NUMBER camp_id FK
+        DATE donation_date
+        NUMBER units_donated
+        NUMBER blood_pressure_sys
+        NUMBER blood_pressure_dia
+        NUMBER pulse_rate
+        NUMBER hemoglobin_reading
+        VARCHAR2 screening_status
+        VARCHAR2 tested_status
+        VARCHAR2 notes
+        TIMESTAMP created_at
+    }
+
+    BLOOD_INVENTORY {
+        NUMBER unit_id PK
+        NUMBER donation_id FK,UK
+        VARCHAR2 blood_group
+        VARCHAR2 component_type
+        DATE collection_date
+        DATE expiration_date
+        VARCHAR2 storage_location
+        VARCHAR2 status
+        TIMESTAMP created_at
+    }
+
+    HOSPITALS {
+        NUMBER hospital_id PK
+        VARCHAR2 hospital_name
+        VARCHAR2 license_no UK
+        VARCHAR2 category
+        VARCHAR2 contact_person
+        VARCHAR2 phone
+        VARCHAR2 email
+        VARCHAR2 address
+        VARCHAR2 city
+        TIMESTAMP created_at
+    }
+
+    BLOOD_REQUESTS {
+        NUMBER request_id PK
+        NUMBER hospital_id FK
+        VARCHAR2 blood_group
+        VARCHAR2 component_type
+        NUMBER units_requested
+        VARCHAR2 urgency_level
+        DATE request_date
+        DATE required_by_date
+        NUMBER units_fulfilled
+        VARCHAR2 status
+        VARCHAR2 notes
+        TIMESTAMP created_at
+    }
+
+    BLOOD_DISPATCHES {
+        NUMBER dispatch_id PK
+        NUMBER request_id FK
+        NUMBER unit_id FK,UK
+        TIMESTAMP dispatch_date
+        NUMBER dispatched_by FK
+        VARCHAR2 transporter_name
+        VARCHAR2 delivery_status
+        VARCHAR2 dispatch_notes
+    }
+    </pre>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <h4>🩸 1:1 Unit Traceability</h4>
+      <p>Every successful <code>DONATION_RECORDS</code> yields exactly one barcode-tracked <code>BLOOD_INVENTORY</code> unit via a 1:1 foreign key constraint.</p>
+    </div>
+    <div class="legend-item">
+      <h4>⚡ FEFO Allocation Logic</h4>
+      <p><code>BLOOD_DISPATCHES</code> links a specific unit to a <code>BLOOD_REQUESTS</code> order based on First-Expired-First-Out expiration dates.</p>
+    </div>
+    <div class="legend-item">
+      <h4>🔒 3NF Normalization</h4>
+      <p>All tables are in 3NF and BCNF. Zero transitive dependencies; all keys generated via Oracle identity sequences.</p>
+    </div>
+    <div class="legend-item">
+      <h4>🍃 Polyglot Persistence</h4>
+      <p>Unstructured reviews, ratings, guidelines, and emergency alerts are persisted in MongoDB with foreign reference keys to Oracle IDs.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
