@@ -154,7 +154,7 @@ def execute_query():
     first_word = cleaned_sql.split()[0].upper() if cleaned_sql.split() else ""
 
     # Permitted SQL statements
-    allowed_verbs = ["SELECT", "INSERT", "UPDATE", "DELETE", "MERGE"]
+    allowed_verbs = ["SELECT", "INSERT", "UPDATE", "DELETE", "MERGE", "CREATE"]
     if first_word not in allowed_verbs:
         return jsonify({
             "success": False,
