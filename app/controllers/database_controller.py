@@ -142,60 +142,80 @@ def index():
 
 @database_bp.route("/api/query", methods=["POST"])
 def execute_query():
-    """Executes a safe read-only SQL SELECT query against Oracle."""
+    """Executes SQL statements (SELECT, INSERT, UPDATE, DELETE, MERGE) against Oracle."""
     req_json = request.get_json(silent=True) or {}
     sql = req_json.get("sql", "").strip()
 
     if not sql:
         return jsonify({"success": False, "error": "Query cannot be empty."}), 400
 
-    # Safety: Enforce SELECT queries only
-    first_word = sql.split()[0].upper() if sql.split() else ""
-    if first_word != "SELECT":
+    # Clean trailing semicolons and normalize
+    cleaned_sql = sql.rstrip(';').strip()
+    first_word = cleaned_sql.split()[0].upper() if cleaned_sql.split() else ""
+
+    # Permitted SQL statements
+    allowed_verbs = ["SELECT", "INSERT", "UPDATE", "DELETE", "MERGE"]
+    if first_word not in allowed_verbs:
         return jsonify({
             "success": False,
-            "error": "Security restriction: Only SELECT queries are permitted in the web SQL console."
+            "error": f"Security restriction: Command '{first_word}' is not allowed. Permitted commands: {', '.join(allowed_verbs)}."
         }), 400
 
-    # Disallow destructive keywords inside query
-    forbidden = ["DROP", "DELETE", "TRUNCATE", "ALTER", "INSERT", "UPDATE", "EXEC", "EXECUTE", "MERGE"]
-    for f in forbidden:
-        if re.search(r'\b' + f + r'\b', sql, re.IGNORECASE):
+    # Safeguard against accidental structural drop of entire tables/schema
+    destructive_structural = ["DROP", "TRUNCATE", "ALTER"]
+    for f in destructive_structural:
+        if re.search(r'\b' + f + r'\b', cleaned_sql, re.IGNORECASE):
             return jsonify({
                 "success": False,
-                "error": f"Security restriction: Forbidden keyword '{f}' detected."
+                "error": f"Security restriction: Structural DDL command '{f}' is disabled. Data operations (SELECT, INSERT, UPDATE, DELETE) are fully enabled."
             }), 400
 
     try:
         with get_oracle_conn() as conn:
             with conn.cursor() as cursor:
-                # Add limit if user didn't specify
-                if "FETCH FIRST" not in sql.upper() and "ROWNUM" not in sql.upper():
-                    sql = f"{sql.rstrip(';')} FETCH FIRST 100 ROWS ONLY"
-                
-                cursor.execute(sql)
-                if not cursor.description:
-                    return jsonify({"success": True, "columns": [], "rows": [], "count": 0})
-                
-                cols = [col[0] for col in cursor.description]
-                raw_rows = cursor.fetchall()
-                
-                formatted_rows = []
-                for r in raw_rows:
-                    row_data = []
-                    for val in r:
-                        if hasattr(val, "isoformat"):
-                            row_data.append(val.strftime("%Y-%m-%d %H:%M"))
-                        else:
-                            row_data.append(str(val) if val is not None else "NULL")
-                    formatted_rows.append(row_data)
+                if first_word == "SELECT":
+                    # Add limit if user didn't specify
+                    run_sql = cleaned_sql
+                    if "FETCH FIRST" not in run_sql.upper() and "ROWNUM" not in run_sql.upper():
+                        run_sql = f"{run_sql} FETCH FIRST 100 ROWS ONLY"
+                    
+                    cursor.execute(run_sql)
+                    if not cursor.description:
+                        return jsonify({"success": True, "action": "SELECT", "columns": [], "rows": [], "count": 0})
+                    
+                    cols = [col[0] for col in cursor.description]
+                    raw_rows = cursor.fetchall()
+                    
+                    formatted_rows = []
+                    for r in raw_rows:
+                        row_data = []
+                        for val in r:
+                            if hasattr(val, "isoformat"):
+                                row_data.append(val.strftime("%Y-%m-%d %H:%M"))
+                            else:
+                                row_data.append(str(val) if val is not None else "NULL")
+                        formatted_rows.append(row_data)
 
-                return jsonify({
-                    "success": True,
-                    "columns": cols,
-                    "rows": formatted_rows,
-                    "count": len(formatted_rows),
-                    "sql": sql
-                })
+                    return jsonify({
+                        "success": True,
+                        "action": "SELECT",
+                        "columns": cols,
+                        "rows": formatted_rows,
+                        "count": len(formatted_rows),
+                        "sql": run_sql
+                    })
+                else:
+                    # DML Command: INSERT, UPDATE, DELETE, MERGE
+                    cursor.execute(cleaned_sql)
+                    affected = cursor.rowcount
+                    conn.commit()
+                    return jsonify({
+                        "success": True,
+                        "action": first_word,
+                        "rows_affected": affected,
+                        "count": affected,
+                        "message": f"Successfully executed {first_word}. {affected} row(s) affected and committed to Oracle 21c.",
+                        "sql": cleaned_sql
+                    })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400

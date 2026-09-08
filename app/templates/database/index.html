@@ -162,10 +162,10 @@
   <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
       <h3 style="margin: 0; font-size: 1.1rem; color: #38bdf8;">
-        💻 Live Oracle SQL Query Console (SELECT only)
+        💻 Live Oracle SQL Studio (SELECT, INSERT, UPDATE, DELETE)
       </h3>
       <div style="font-size: 0.78rem; color: var(--text-muted);">
-        Connected to <strong>XEPDB1</strong> via Oracle Thin Driver
+        Connected to <strong>XEPDB1</strong> via Oracle Thin Driver &bull; <span style="color: #34d399;">DML Enabled</span>
       </div>
     </div>
 
@@ -173,22 +173,25 @@
     <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.85rem;">
       <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Samples:</span>
       <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM DONORS WHERE BLOOD_GROUP = \'O+\'')">
-        O+ Donors
+        🔍 SELECT O+ Donors
+      </button>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('UPDATE DONORS SET weight_kg = 68.5 WHERE donor_id = 1001')">
+        ✏️ UPDATE Donor Weight
       </button>
       <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM BLOOD_INVENTORY WHERE STATUS = \'AVAILABLE\' ORDER BY EXPIRATION_DATE ASC')">
-        Available FEFO Units
+        🔍 Available FEFO Units
+      </button>
+      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('DELETE FROM DONORS WHERE email = \'test.donor@example.com\'')">
+        🗑️ DELETE Sample Donor
       </button>
       <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT h.hospital_name, r.blood_group, r.urgency_level, r.units_requested FROM BLOOD_REQUESTS r JOIN HOSPITALS h ON r.hospital_id = h.hospital_id')">
-        Hospital Demands Join
-      </button>
-      <button type="button" class="btn btn-sm btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="loadSampleQuery('SELECT * FROM AUDIT_DISPATCH_LOG ORDER BY log_id DESC')">
-        Audit Trigger Logs
+        🔍 Hospital Demands Join
       </button>
     </div>
 
     <!-- SQL Editor -->
     <div style="position: relative;">
-      <textarea id="sql-input" class="form-control" rows="4" style="font-family: monospace; font-size: 0.95rem; background: rgba(7, 11, 20, 0.95); border: 1px solid rgba(56,189,248,0.3); line-height: 1.5;" placeholder="Enter Oracle SQL SELECT query (e.g. SELECT * FROM DONORS)...">SELECT * FROM DONORS</textarea>
+      <textarea id="sql-input" class="form-control" rows="4" style="font-family: monospace; font-size: 0.95rem; background: rgba(7, 11, 20, 0.95); border: 1px solid rgba(56,189,248,0.3); line-height: 1.5;" placeholder="Enter Oracle SQL statement (SELECT, INSERT, UPDATE, DELETE, MERGE)...">SELECT * FROM DONORS</textarea>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
@@ -385,6 +388,30 @@ function runCustomQuery() {
       return;
     }
 
+    if (data.action && data.action !== 'SELECT') {
+      // DML Statement (INSERT, UPDATE, DELETE, MERGE)
+      statusMsg.innerHTML = `✅ Successfully executed <strong>${data.action}</strong>: <strong>${data.rows_affected}</strong> row(s) affected and committed to Oracle 21c.`;
+      statusMsg.style.color = "#34d399";
+      countBadge.innerText = `${data.rows_affected} Affected`;
+      resultsCard.style.display = 'block';
+
+      tableWrap.innerHTML = `
+        <div style="padding: 1.5rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #34d399; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem;">
+            <span>✓</span> Statement Executed &amp; Auto-Committed
+          </div>
+          <div style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.75rem;">
+            Command: <strong style="color: #38bdf8;">${data.action}</strong> &bull; Rows Affected: <strong style="color: #fff; font-size: 1rem;">${data.rows_affected}</strong>
+          </div>
+          <div style="background: rgba(0,0,0,0.4); padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; color: #7dd3fc; border: 1px solid var(--border-subtle);">
+            ${data.sql}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // SELECT Statement
     statusMsg.innerHTML = `✅ Successfully returned <strong>${data.count}</strong> rows from Oracle 21c.`;
     statusMsg.style.color = "#34d399";
     countBadge.innerText = `${data.count} Rows`;
